@@ -1,7 +1,7 @@
 /****************************************************************************
  * Author:      - André Freitas, p.andrefreitas@gmail.com / ei10036@fe.up.pt
  * Author:      - Vasco Gonçalves, vascofg@gmail.com / ei10054@fe.up.pt
- * Copyright:   - 26/05/2012, SOPE, FEUP
+ * Copyright:   - 25/05/2012, SOPE, FEUP
  ****************************************************************************/
 #include "account.h"
 #include <stdio.h>
@@ -37,9 +37,11 @@ void account_deposit(struct Account *a, double amount) {
 	a->balance += amount;
 }
 int account_withdraw(struct Account *a, double amount) {
-	if (a->balance < amount)
-		return 0;
-	return 1;
+	if (a->balance > amount){
+		a->balance-=amount;
+		return 1;
+	}
+	return 0;
 }
 double account_getBalance(struct Account *a) {
 	return a->balance;
