@@ -3,7 +3,7 @@
 int show_menu()
 {
 	int opt;
-	printf("CLIENTE DE MULTIBANCO\n-----------------------\n1 - Levantar dinheiro\n2 - Depositar dinheiro\n3 - Transferência\n4 - Consultar Saldo\n5 - Sair\n");
+	printf("CLIENTE DE MULTIBANCO\n-----------------------\n1 - Levantar dinheiro\n2 - Depositar dinheiro\n3 - Transferï¿½ncia\n4 - Consultar Saldo\n5 - Sair\n");
 	scanf("%d", &opt);
 	switch(opt)
 	{
@@ -13,11 +13,3 @@ int show_menu()
 	return 1;
 }
 
-//TODO SEPARATE TO A DIFFERENT APPLICATION
-/*int main()
-{
-	do {
-	} while (show_menu());
-	return 0;
-}
-*/

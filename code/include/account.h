@@ -1,8 +1,8 @@
-/**
- Authors: - André Freitas p.andrefreitas@gmail.com
- - Vasco Gonçalves vascofg@gmail.com
- Copyright: 2012, Faculdade de Engenharia da Universidade do Porto
- */
+/****************************************************************************
+ * Author:      - André Freitas, p.andrefreitas@gmail.com / ei10036@fe.up.pt
+ * Author:      - Vasco Gonçalves, vascofg@gmail.com / ei10054@fe.up.pt
+ * Copyright:   - 26/05/2012, SOPE, FEUP
+ ****************************************************************************/
 #ifndef ACCOUNT_H_
 #define ACCOUNT_H_
 
@@ -47,6 +47,11 @@ int account_createAutoIncrement(struct Account *a, char *usr, char *pin,
 /** Reset the last account number
  */
 void account_resetLastAccountNumber();
+
+/** Sets the last account number
+ * @param nr the pretended number
+ */
+void account_setLastAccountNumber(int nr);
 
 /** Does a deposit of money from an account
  * @param *a the pointer for the account struct

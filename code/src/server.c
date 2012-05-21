@@ -1,3 +1,9 @@
+/****************************************************************************
+ * Author:      - André Freitas, p.andrefreitas@gmail.com / ei10036@fe.up.pt
+ * Author:      - Vasco Gonçalves, vascofg@gmail.com / ei10054@fe.up.pt
+ * Copyright:   - 26/05/2012, SOPE, FEUP
+ ****************************************************************************/
+
 #include "account.h"
 #include "server.h"
 #include <string.h>
@@ -6,40 +12,53 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/file.h>
+
+// Necessary constants
 #define MAX_STRING 100
+#define MAX_ACCOUNTS 100
+
 void server_create(struct Server *s, char *accountsFileName,
 		char *requestFIFOname) {
+	s=malloc(sizeof(struct Server));
 	s->accountsFileName = malloc(sizeof(char) * MAX_STRING);
 	s->requestsFIFOname = malloc(sizeof(char) * MAX_STRING);
 	strcpy(s->accountsFileName, accountsFileName);
 	strcpy(s->requestsFIFOname, requestFIFOname);
 	mkfifo(s->requestsFIFOname, 0660);
+	s->accounts =malloc(sizeof (struct Account *) * MAX_ACCOUNTS);
+	s->totalAccounts=0;
 
 }
 
-/*void server_loadAccounts(struct Server *s) {
-
-}
-void server_run(struct Server *s) {
-
-}
-void server_saveAccounts(struct Server *s) {
-
-}*/
-
-int server_createAccount(struct Server *s, accountnr_t nr, char *usr, char *pin,
-		double initialBalance) {
+int server_createAccount(struct Server *s, accountnr_t nr, char *usr, char *pin, double initialBalance) {
 	struct Account *a = NULL;
-	return account_createAutoIncrement(a, usr, pin, initialBalance);
+	int status= account_create(a, nr,usr, pin, initialBalance);
+	s->accounts[s->totalAccounts]=a;
+	s->totalAccounts++;
+	return status;
 }
+int server_createAccountIncrement(struct Server *s, char *usr, char *pin, double initialBalance){
 
+	struct Account *a;
+	printf ("\ndentro 1");
+	int status= account_createAutoIncrement(a, usr, pin, initialBalance);
+
+	s->accounts[s->totalAccounts]=a;
+	//s->totalAccounts++;
+	return 1;
+}
 int server_deleteAccount(struct Server *s, accountnr_t nr) {
 	struct Account *a = server_getAccountbyID(s, nr);
-	if (a != NULL)
-	{
-		a = NULL;
-		return 0;
-	}
+	// Check if account exist
+	if (a == NULL)
+	return 0;
+	// Shift left the accounts
+	int unsigned i,j;
+	for (i=0; i<s->totalAccounts; i++)
+		if(s->accounts[i]->number == nr)
+			for (j=i; j< (s->totalAccounts-1);j++)
+				s->accounts[j]=s->accounts[j+1];
+	s->totalAccounts--;
 	return 1;
 }
 
@@ -63,9 +82,6 @@ int server_depositAccount(struct Server *s, accountnr_t nr, double amount) {
 	return 1;
 }
 
-/*int server_authAccount(struct Server *s, accountnr_t nr, char *pinGiven) {
-
-}*/
 
 int server_transfer(struct Server *s, accountnr_t source,
 		accountnr_t destination, double amount) {
@@ -91,7 +107,7 @@ int server_witdhdraw(struct Server *s, accountnr_t nr, double amount) {
 
 struct Account* server_getAccountbyID(struct Server *s, accountnr_t nr) {
 	int i;
-	for (i = 0; i < lastAccountNumber; i++)
+	for (i = 0; i <s->totalAccounts; i++)
 		if (s->accounts[i] != NULL)
 			if (s->accounts[i]->number == nr)
 				return s->accounts[i];
@@ -100,8 +116,7 @@ struct Account* server_getAccountbyID(struct Server *s, accountnr_t nr) {
 
 int main() {
 	struct Account a1;
-	if (!account_createAutoIncrement(&a1, "Jojo Carlos", "1234", 11)) {
-		printf("Account creation error");
-	}
+	struct Account a2:
+
 	return 0;
 }
