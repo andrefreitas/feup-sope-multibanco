@@ -5,7 +5,7 @@
  ****************************************************************************/
 #include <stdio.h>
 
-int show_menu()
+/*int show_menu()
 {
 	int opt;
 	printf("ADMINISTRADOR DE MULTIBANCO\n--------------------------\n1 - Criar Nova Conta\n2 - Listar Contas\n3 - Eliminar Conta\n4 - Encerrar Servidor\n5 - Sair\n");
@@ -17,3 +17,4 @@ int show_menu()
 	}
 	return 1;
 }
+*/

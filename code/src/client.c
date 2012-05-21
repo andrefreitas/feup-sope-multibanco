@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-int show_menu()
+/*int show_menu()
 {
 	int opt;
 	printf("CLIENTE DE MULTIBANCO\n-----------------------\n1 - Levantar dinheiro\n2 - Depositar dinheiro\n3 - Transfer�ncia\n4 - Consultar Saldo\n5 - Sair\n");
@@ -11,5 +11,5 @@ int show_menu()
 		return 0;
 	}
 	return 1;
-}
+}*/
 
