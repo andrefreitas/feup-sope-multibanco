@@ -17,21 +17,19 @@
 #define MAX_STRING 100
 #define MAX_ACCOUNTS 100
 
-void server_create(struct Server *s, char *accountsFileName,
-		char *requestFIFOname) {
-	s=malloc(sizeof(struct Server));
+void server_create(struct Server *s, char *accountsFileName, char *requestFIFOname) {
 	s->accountsFileName = malloc(sizeof(char) * MAX_STRING);
 	s->requestsFIFOname = malloc(sizeof(char) * MAX_STRING);
 	strcpy(s->accountsFileName, accountsFileName);
 	strcpy(s->requestsFIFOname, requestFIFOname);
-	mkfifo(s->requestsFIFOname, 0660);
-	s->accounts =malloc(sizeof (struct Account *) * MAX_ACCOUNTS);
+	mkfifo(s->requestsFIFOname, O_RDONLY);
+	s->accounts =malloc(sizeof (struct Account* ) * MAX_ACCOUNTS);
 	s->totalAccounts=0;
 
 }
 
 int server_createAccount(struct Server *s, accountnr_t nr, char *usr, char *pin, double initialBalance) {
-	struct Account *a = NULL;
+	struct Account *a = malloc(sizeof(struct Account));
 	int status= account_create(a, nr,usr, pin, initialBalance);
 	s->accounts[s->totalAccounts]=a;
 	s->totalAccounts++;
@@ -39,13 +37,11 @@ int server_createAccount(struct Server *s, accountnr_t nr, char *usr, char *pin,
 }
 int server_createAccountIncrement(struct Server *s, char *usr, char *pin, double initialBalance){
 
-	struct Account *a;
-	printf ("\ndentro 1");
+	struct Account *a=malloc(sizeof(struct Account));
 	int status= account_createAutoIncrement(a, usr, pin, initialBalance);
-
 	s->accounts[s->totalAccounts]=a;
-	//s->totalAccounts++;
-	return 1;
+	s->totalAccounts++;
+	return status;
 }
 int server_deleteAccount(struct Server *s, accountnr_t nr) {
 	struct Account *a = server_getAccountbyID(s, nr);
@@ -115,8 +111,14 @@ struct Account* server_getAccountbyID(struct Server *s, accountnr_t nr) {
 }
 
 int main() {
-	struct Account a1;
-	struct Account a2:
-
+	struct Server *s=malloc(sizeof(struct Server));
+	server_create(s,"accounts.txt","reqiests");
+	server_createAccountIncrement(s,"Joana Faria","1234",12.10);
+	server_createAccount(s,4,"Ana","1234",12.10);
+	struct Account *a;
+	a=server_getAccountbyID(s,4);
+	if(a!=NULL){
+		printf("%s\n",account_toString(a));
+	}
 	return 0;
 }

@@ -14,7 +14,6 @@ int account_create(struct Account *a, accountnr_t nr, char * usr, char *pin,
 	if (strlen(usr) > MAX_USER_LENGTH || strlen(pin) != PIN_LENGTH
 			|| initialBalance < 0 || nr < 1)
 		return 0;
-	a=malloc(sizeof(struct Account));
 	a->number = nr;
 	a->user = malloc(sizeof(char) * (MAX_USER_LENGTH + 1));
 	strcpy(a->user,usr);
