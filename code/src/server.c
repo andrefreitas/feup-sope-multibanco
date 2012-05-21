@@ -19,22 +19,25 @@
 #define MAX_ACCOUNTS 100
 
 void server_saveAccounts(struct Server *s) {
-	int i;
+	int i = 0;
 	FILE * pFile;
-	pFile = fopen("accounts.txt", "w ");
-
-	for (i = 0; i < s->totalAccounts; i++) {
-		char* wrStr = 0;
-		sprintf(wrStr, "%u %s %s %f\n", s->accounts[i]->number,
+	pFile = fopen(s->accountsFileName, "w");
+	char* wrStr = malloc(128 * sizeof(char));
+	sprintf(wrStr, "%08d %-20s %-4s %13.2f", s->accounts[i]->number,
+			s->accounts[i]->user, s->accounts[i]->pin, s->accounts[i]->balance);
+	fwrite(wrStr, sizeof(char) * strlen(wrStr), 1, pFile);
+	for (i = 1; i < s->totalAccounts; i++) {
+		wrStr = malloc(128 * sizeof(char));
+		sprintf(wrStr, "\n%08d %-20s %-4s %13.2f", s->accounts[i]->number,
 				s->accounts[i]->user, s->accounts[i]->pin,
 				s->accounts[i]->balance);
-		fwrite(wrStr, 1, sizeof(wrStr), pFile);
+		fwrite(wrStr, sizeof(char) * strlen(wrStr), 1, pFile);
 	}
 	fclose(pFile);
 }
 
 void server_loadAccounts(struct Server *s) {
-	FILE *file = fopen("accounts.txt", "r");
+	FILE *file = fopen(s->accountsFileName, "r");
 	if (file != NULL) {
 		char line[128];
 		while (fgets(line, sizeof line, file) != NULL) {
@@ -47,15 +50,18 @@ void server_loadAccounts(struct Server *s) {
 			number = atoi(word);
 			word = strtok(NULL, " \n");
 			user = word;
-			word = strtok(line, " \n");
+			word = strtok(NULL, " \n");
 			pin = word;
-			word = strtok(line, " \n");
+			word = strtok(NULL, " \n");
 			balance = atof(word);
 			struct Account *a = malloc(sizeof(struct Account));
 			account_create(a, number, user, pin, balance);
+			s->accounts[s->totalAccounts] = a;
+			s->totalAccounts++;
 		}
 		fclose(file);
-	}
+	} else
+		(perror("ERROR: "));
 }
 
 void server_create(struct Server *s, char *accountsFileName,
@@ -154,12 +160,13 @@ struct Account* server_getAccountbyID(struct Server *s, accountnr_t nr) {
 int main() {
 	struct Server *s = malloc(sizeof(struct Server));
 	server_create(s, "accounts.txt", "reqiests");
-	server_createAccountIncrement(s, "Joana Faria", "1234", 12.10);
-	server_createAccount(s, 4, "Ana", "1234", 12.10);
+	server_loadAccounts(s);
 	struct Account *a;
 	a = server_getAccountbyID(s, 4);
 	if (a != NULL) {
 		printf("%s\n", account_toString(a));
 	}
+	/*server_createAccount(s, 4, "Bino", "1234", 1500);
+	server_saveAccounts(s);*/
 	return 0;
 }
