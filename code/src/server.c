@@ -1,7 +1,7 @@
 /****************************************************************************
  * Author:      - André Freitas, p.andrefreitas@gmail.com / ei10036@fe.up.pt
  * Author:      - Vasco Gonçalves, vascofg@gmail.com / ei10054@fe.up.pt
- * Copyright:   - 26/05/2012, SOPE, FEUP
+ * Copyright:   - 25/05/2012, SOPE, FEUP
  ****************************************************************************/
 
 #include "account.h"
@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/file.h>
+#include "logs.h"
 
 // Necessary constants
 #define MAX_STRING 100
@@ -79,8 +80,7 @@ int server_depositAccount(struct Server *s, accountnr_t nr, double amount) {
 }
 
 
-int server_transfer(struct Server *s, accountnr_t source,
-		accountnr_t destination, double amount) {
+int server_transfer(struct Server *s, accountnr_t source, accountnr_t destination, double amount) {
 	struct Account *srcacc = server_getAccountbyID(s, source);
 	struct Account *destacc = server_getAccountbyID(s, destination);
 	if (srcacc != NULL && destacc != NULL
@@ -111,14 +111,7 @@ struct Account* server_getAccountbyID(struct Server *s, accountnr_t nr) {
 }
 
 int main() {
-	struct Server *s=malloc(sizeof(struct Server));
-	server_create(s,"accounts.txt","reqiests");
-	server_createAccountIncrement(s,"Joana Faria","1234",12.10);
-	server_createAccount(s,4,"Ana","1234",12.10);
-	struct Account *a;
-	a=server_getAccountbyID(s,4);
-	if(a!=NULL){
-		printf("%s\n",account_toString(a));
-	}
+	logs_createFile();
+	logs_addHeader();
 	return 0;
 }

@@ -1,7 +1,7 @@
 /****************************************************************************
  * Author:      - André Freitas, p.andrefreitas@gmail.com / ei10036@fe.up.pt
  * Author:      - Vasco Gonçalves, vascofg@gmail.com / ei10054@fe.up.pt
- * Copyright:   - 26/05/2012, SOPE, FEUP
+ * Copyright:   - 25/05/2012, SOPE, FEUP
  ****************************************************************************/
 #include <stdio.h>
 
