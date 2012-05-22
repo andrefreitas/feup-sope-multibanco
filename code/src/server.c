@@ -43,6 +43,7 @@ void server_saveAccounts(struct Server *s) {
 void server_loadAccounts(struct Server *s) {
 	FILE *file = fopen(s->accountsFileName, "r");
 	if (file != NULL) {
+		printf("\nNão é nulo\n");
 		char line[128];
 		while (fgets(line, sizeof line, file) != NULL) {
 			unsigned int number;
