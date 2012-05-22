@@ -50,7 +50,7 @@ void logs_addEvent(char *msg, char *who){
 	getHour(hour);
 
 	// Print to buffer
-	sprintf(buffer,"%-10s \n",date);
+	sprintf(buffer,"%-10s %-8s %-8s %s\n",date,hour,who,msg);
 
 	// Open file and append
 	int fileDes=open(logsFileName,O_WRONLY | O_APPEND);
@@ -64,7 +64,7 @@ void logs_createFile(){
 	int fileDes=open(logsFileName,O_CREAT | O_WRONLY,0777);
 	if(fileDes==-1) perror("logfile creation\n");
 	char *header=malloc(sizeof(char)*MAX_HEADER_LEN);
-	sprintf(header,"   DATA      HORA   PROGRAMA  OPERACAO\n");
+	sprintf(header,"   DATA      HORA   PROGRAMA OPERACAO\n");
 	write(fileDes,header,strlen(header)*sizeof(char));
 	close(fileDes);
 }
