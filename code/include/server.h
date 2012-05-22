@@ -13,7 +13,7 @@
 struct Server {
 	char *accountsFileName; /* The name where the accounts data is saved */
 	char *requestsFIFOname; /* The name of the requests fifo */
-	struct Account **accounts; /* The list of accounts */
+	struct Account *accounts; /* The list of accounts */
 	int totalAccounts;
 };
 
@@ -40,6 +40,8 @@ int server_authAccount(struct Server *s, accountnr_t nr, char *pinGiven);
 int server_transfer(struct Server *s, accountnr_t source, accountnr_t destination, double amount);
 
 int server_witdhdraw(struct Server *s, accountnr_t nr, double amount);
+
+void server_printAccounts(struct Server *s);
 
 struct Account* server_getAccountbyID(struct Server *s, accountnr_t nr);
 

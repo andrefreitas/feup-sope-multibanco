@@ -26,15 +26,15 @@ void server_saveAccounts(struct Server *s) {
 	pFile = fopen(s->accountsFileName, "w");
 	char* wrStr = malloc(128 * sizeof(char));
 
-	sprintf(wrStr, "%07d %-20s %-4s %13.2f", s->accounts[i]->number,
-			s->accounts[i]->user, s->accounts[i]->pin, s->accounts[i]->balance);
+	sprintf(wrStr, "%07d %-20s %-4s %13.2f", s->accounts[i].number,
+			s->accounts[i].user, s->accounts[i].pin, s->accounts[i].balance);
 	fwrite(wrStr, sizeof(char) * strlen(wrStr), 1, pFile);
 
 	for (i = 1; i < s->totalAccounts; i++) {
 		wrStr = malloc(128 * sizeof(char));
-		sprintf(wrStr, "\n%07d %-20s %-4s %13.2f", s->accounts[i]->number,
-				s->accounts[i]->user, s->accounts[i]->pin,
-				s->accounts[i]->balance);
+		sprintf(wrStr, "\n%07d %-20s %-4s %13.2f", s->accounts[i].number,
+				s->accounts[i].user, s->accounts[i].pin,
+				s->accounts[i].balance);
 		fwrite(wrStr, sizeof(char) * strlen(wrStr), 1, pFile);
 	}
 	fclose(pFile);
@@ -60,7 +60,7 @@ void server_loadAccounts(struct Server *s) {
 			balance = atof(word);
 			struct Account *a = malloc(sizeof(struct Account));
 			account_create(a, number, user, pin, balance);
-			s->accounts[s->totalAccounts] = a;
+			s->accounts[s->totalAccounts] = *a;
 			s->totalAccounts++;
 		}
 		fclose(file);
@@ -75,26 +75,36 @@ void server_create(struct Server *s, char *accountsFileName,
 	strcpy(s->accountsFileName, accountsFileName);
 	strcpy(s->requestsFIFOname, requestFIFOname);
 	mkfifo(s->requestsFIFOname, O_RDONLY);
-	s->accounts = malloc(sizeof(struct Account*) * MAX_ACCOUNTS);
+	s->accounts = malloc(sizeof(struct Account));
 	s->totalAccounts = 0;
 
 }
 
-int server_createAccount(struct Server *s, accountnr_t nr, char *usr, char *pin,
-		double initialBalance) {
+int server_createAccount(struct Server *s, accountnr_t nr, char *usr, char *pin, double initialBalance) {
+
 	struct Account *a = malloc(sizeof(struct Account));
 	int status = account_create(a, nr, usr, pin, initialBalance);
-	s->accounts[s->totalAccounts] = a;
+
+	// Dynamic memory allocation
+	struct Account *accountsTemp;
 	s->totalAccounts++;
+	accountsTemp=realloc(s->accounts, s->totalAccounts * sizeof(struct Account ));
+	s->accounts=accountsTemp;
+	s->accounts[s->totalAccounts-1]=*a;
+
 	return status;
 }
-int server_createAccountIncrement(struct Server *s, char *usr, char *pin,
-		double initialBalance) {
+int server_createAccountIncrement(struct Server *s, char *usr, char *pin, double initialBalance) {
 
 	struct Account *a = malloc(sizeof(struct Account));
 	int status = account_createAutoIncrement(a, usr, pin, initialBalance);
-	s->accounts[s->totalAccounts] = a;
+
+	// Dynamic memory allocation
+	struct Account *accountsTemp;
 	s->totalAccounts++;
+	accountsTemp=realloc(s->accounts, s->totalAccounts * sizeof(struct Account ));
+	s->accounts=accountsTemp;
+	s->accounts[s->totalAccounts-1]=*a;
 	return status;
 }
 int server_deleteAccount(struct Server *s, accountnr_t nr) {
@@ -105,7 +115,7 @@ int server_deleteAccount(struct Server *s, accountnr_t nr) {
 // Shift left the accounts
 	int unsigned i, j;
 	for (i = 0; i < s->totalAccounts; i++)
-		if (s->accounts[i]->number == nr)
+		if (s->accounts[i].number == nr)
 			for (j = i; j < (s->totalAccounts - 1); j++)
 				s->accounts[j] = s->accounts[j + 1];
 	s->totalAccounts--;
@@ -154,14 +164,214 @@ int server_witdhdraw(struct Server *s, accountnr_t nr, double amount) {
 struct Account* server_getAccountbyID(struct Server *s, accountnr_t nr) {
 	int i;
 	for (i = 0; i < s->totalAccounts; i++)
-		if (s->accounts[i] != NULL)
-			if (s->accounts[i]->number == nr)
-				return s->accounts[i];
+			if (s->accounts[i].number == nr)
+				return &s->accounts[i];
 	return NULL;
 }
 
+void server_printAccounts(struct Server *s){
+	int unsigned i=0;
+	for(i=0; i<s->totalAccounts; i++){
+		printf("%s\n",account_toString(&s->accounts[i]));
+	}
+}
 int main() {
-	logs_createFile();
-	logs_addEvent("O rato roeu a rolha do rei da rússia roendo raramente as ramelas.","SERVER");
+	struct Server *s=malloc(sizeof(struct Server));
+	server_create(s,"accounts.txt","reqiests");
+	server_createAccountIncrement(s,"Joana Faria","1234",12.10);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+	server_createAccountIncrement(s,"Carlos","1424",0);
+	server_createAccountIncrement(s,"Ana Laurinda","1789",400);
+
+
+
+
+
+	server_printAccounts(s);
 	return 0;
 }

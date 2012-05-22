@@ -25,8 +25,7 @@ int account_create(struct Account *a, accountnr_t nr, char * usr, char *pin,
 
 }
 
-int account_createAutoIncrement(struct Account *a, char *usr, char *pin,
-		double initialBalance) {
+int account_createAutoIncrement(struct Account *a, char *usr, char *pin, double initialBalance) {
 	return account_create(a, 	++lastAccountNumber, usr, pin, initialBalance);
 }
 
@@ -48,8 +47,7 @@ double account_getBalance(struct Account *a) {
 }
 char * account_toString(struct Account *a) {
 	char * buffer = malloc(sizeof(char) * 100);
-	sprintf(buffer, "%07d %-20s %-4s %13.2f", a->number, a->user, a->pin,
-			a->balance);
+	sprintf(buffer, "%07d %-20s %-4s %13.2f", a->number, a->user, a->pin, a->balance);
 	return buffer;
 }
 void account_setLastAccountNumber(int nr){
