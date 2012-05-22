@@ -162,6 +162,6 @@ struct Account* server_getAccountbyID(struct Server *s, accountnr_t nr) {
 
 int main() {
 	logs_createFile();
-	logs_addEvent("Criou programa","SERVER");
+	logs_addEvent("O rato roeu a rolha do rei da rússia roendo raramente as ramelas.","SERVER");
 	return 0;
 }

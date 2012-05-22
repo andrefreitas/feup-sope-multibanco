@@ -16,6 +16,7 @@
 #define MAX_FILENAME_LEN 100
 #define MAX_HEADER_LEN 100
 #define MAX_BUFFER_SIZE 100
+#define MAX_MESSAGE_LEN 42
 char * logsFileName="/tmp/logfile.txt";
 
 
@@ -48,6 +49,14 @@ void logs_addEvent(char *msg, char *who){
 	char *date=malloc(sizeof(char)*15);
 	getDate(date);
 	getHour(hour);
+
+	// Shorten message if necessary
+	if(strlen(msg)>MAX_MESSAGE_LEN){
+		char *shortenMsg=malloc(sizeof(char)*(MAX_MESSAGE_LEN+1));
+		strncpy(shortenMsg,msg,MAX_MESSAGE_LEN);
+		msg=shortenMsg;
+		strcat(msg,"...");
+	}
 
 	// Print to buffer
 	sprintf(buffer,"%-10s %-8s %-8s %s\n",date,hour,who,msg);
