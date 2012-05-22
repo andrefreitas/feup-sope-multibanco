@@ -159,20 +159,7 @@ struct Account* server_getAccountbyID(struct Server *s, accountnr_t nr) {
 }
 
 int main() {
-
-<<<<<<< HEAD
-=======
-	struct Server *s = malloc(sizeof(struct Server));
-	server_create(s, "accounts.txt", "reqiests");
-	server_loadAccounts(s);
-	struct Account *a;
-	a = server_getAccountbyID(s, 4);
-	if (a != NULL) {
-		printf("%s\n", account_toString(a));
-	}
-	/*server_createAccount(s, 4, "Bino", "1234", 1500);
-	server_saveAccounts(s);*/
->>>>>>> 410c9be2a5a078e8a69d8630d91a1cc2f3cfd101
-
+	logs_createFile();
+	logs_addEvent("Criou programa","SERVER");
 	return 0;
 }

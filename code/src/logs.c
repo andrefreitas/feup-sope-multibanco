@@ -15,6 +15,7 @@
 
 #define MAX_FILENAME_LEN 100
 #define MAX_HEADER_LEN 100
+#define MAX_BUFFER_SIZE 100
 char * logsFileName="/tmp/logfile.txt";
 
 
@@ -26,7 +27,6 @@ void getDate(char *date){
 	d = localtime(&now);
 	strftime(li, 15, "%d/%m/%Y", d);
 	strcpy(date, li);
-
 }
 
 void getHour(char *hour){
@@ -40,28 +40,33 @@ void logs_changeFileName(char *name){
 	strcpy(logsFileName,name);
 }
 void logs_addEvent(char *msg, char *who){
-	if(!file_exists(logsFileName)){
-		logs_createFile();
-		logs_addHeader();
-	}
-	char
-	char *buffer=malloc
+	if(!file_exists(logsFileName)) logs_createFile();
+
+	// Get the date and hour and allocate memory
+	char *buffer=malloc(sizeof(char)*MAX_BUFFER_SIZE);
+	char *hour=malloc(sizeof(char)*15);
+	char *date=malloc(sizeof(char)*15);
+	getDate(date);
+	getHour(hour);
+
+	// Print to buffer
+	sprintf(buffer,"%-10s \n",date);
+
+	// Open file and append
+	int fileDes=open(logsFileName,O_WRONLY | O_APPEND);
+	if(fileDes==-1) perror("adicionar evento");
+	write(fileDes,buffer,strlen(buffer)*sizeof(char));
+	close(fileDes);
+
 
 }
 void logs_createFile(){
-	int fileDes=open(logsFileName,O_CREAT,0777);
-	if(fileDes==-1) perror("logfile\n");
-	close(fileDes);
-}
-
-void logs_addHeader(){
-	int fileDes=open(logsFileName,O_WRONLY | O_APPEND | O_TRUNC);
-	if(fileDes==-1) perror("logfile\n");
+	int fileDes=open(logsFileName,O_CREAT | O_WRONLY,0777);
+	if(fileDes==-1) perror("logfile creation\n");
 	char *header=malloc(sizeof(char)*MAX_HEADER_LEN);
-	sprintf(header,"   DATA      HORA   PROGRAMA  OPERACAO");
-	write(fileDes,header,40);
+	sprintf(header,"   DATA      HORA   PROGRAMA  OPERACAO\n");
+	write(fileDes,header,strlen(header)*sizeof(char));
 	close(fileDes);
-
 }
 int file_exists(char *filename){
 	return (open(filename, O_RDONLY)!=-1);

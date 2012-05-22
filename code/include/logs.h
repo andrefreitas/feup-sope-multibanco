@@ -9,7 +9,6 @@
 extern char * logsFileName;
 void logs_changeFileName(char *name);
 void logs_addEvent(char *msg, char *who);
-void logs_addHeader();
 void logs_createFile();
 int file_exists(char *filename);
 void getDate(char *date);
