@@ -53,3 +53,7 @@ char * account_toString(struct Account *a) {
 void account_setLastAccountNumber(int nr){
 	lastAccountNumber=nr;
 }
+int account_compare (const void * a1, const void * a2)
+{
+  return ( ((struct Account*)a1)->number -((struct Account*)a2)->number);
+}

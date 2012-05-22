@@ -43,6 +43,8 @@ int server_witdhdraw(struct Server *s, accountnr_t nr, double amount);
 
 void server_printAccounts(struct Server *s);
 
+void server_sortAccounts(struct Server *s);
+
 struct Account* server_getAccountbyID(struct Server *s, accountnr_t nr);
 
 #endif /* SERVER_C_ */

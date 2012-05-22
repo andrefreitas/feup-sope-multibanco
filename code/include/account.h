@@ -80,4 +80,8 @@ double account_getBalance(struct Account *a);
  */
 char * account_toString(struct Account *a);
 
+/** Compare 2 accounts
+ */
+
+int account_compare (const void * a1, const void * a2);
 #endif /* ACCOUNT_H_ */
