@@ -58,18 +58,25 @@ void server_loadAccounts(struct Server *s) {
 			pin = word;
 			word = strtok(NULL, " \n");
 			balance = atof(word);
+
 			struct Account *a = malloc(sizeof(struct Account));
 			account_create(a, number, user, pin, balance);
-			s->accounts[s->totalAccounts] = *a;
+			printf("%s\n",account_toString(a));
+			// Dynamic memory allocation
+			struct Account *accountsTemp;
 			s->totalAccounts++;
+			accountsTemp=realloc(s->accounts, s->totalAccounts * sizeof(struct Account ));
+			s->accounts=accountsTemp;
+			s->accounts[s->totalAccounts-1]=*a;
+			server_sortAccounts(s);
 		}
 		fclose(file);
-	} else
-		(perror("ERROR: "));
+	}
 }
 
 void server_create(struct Server *s, char *accountsFileName,
 		char *requestFIFOname) {
+	server_loadAccounts(s);
 	s->accountsFileName = malloc(sizeof(char) * MAX_STRING);
 	s->requestsFIFOname = malloc(sizeof(char) * MAX_STRING);
 	strcpy(s->accountsFileName, accountsFileName);
@@ -184,17 +191,8 @@ void server_sortAccounts(struct Server *s){
 }
 int main() {
 	struct Server *s=malloc(sizeof(struct Server));
-	server_create(s,"accounts.txt","reqiests");
-	server_createAccount(s,7,"Joana Faria","1234",12.10);
-	server_createAccount(s,2,"Joana Faria","1234",12.10);
-	server_createAccount(s,17,"Joana Faria","1234",12.10);
-	server_createAccount(s,4,"Joana Faria","1234",12.10);
-	server_createAccount(s,1,"Joana Faria","1234",12.10);
-	server_createAccount(s,6,"Joana Faria","1234",12.10);
-	server_createAccount(s,3,"Joana Faria","1234",12.10);
-	server_createAccount(s,8,"Joana Faria","1234",12.10);
-	struct Account *a;
-	a=server_getAccountbyID(s,7);
-	printf("%s\n",account_toString(a));
+	server_create(s,"accounts.txt","requests");
+	server_printAccounts(s);
+	server_saveAccounts(s);
 	return 0;
 }
