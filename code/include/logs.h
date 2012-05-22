@@ -12,6 +12,8 @@ void logs_addEvent(char *msg, char *who);
 void logs_addHeader();
 void logs_createFile();
 int file_exists(char *filename);
+void getDate(char *date);
+void getHour(char *hour);
 
 
 #endif /* LOGS_H_ */

@@ -14,6 +14,7 @@
 #include <sys/file.h>
 #include "logs.h"
 #include <unistd.h>
+#include <time.h>
 
 // Necessary constants
 #define MAX_STRING 100
@@ -152,6 +153,7 @@ struct Account* server_getAccountbyID(struct Server *s, accountnr_t nr) {
 }
 
 int main() {
+
 
 	return 0;
 }
