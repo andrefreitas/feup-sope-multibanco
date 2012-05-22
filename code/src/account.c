@@ -48,7 +48,7 @@ double account_getBalance(struct Account *a) {
 }
 char * account_toString(struct Account *a) {
 	char * buffer = malloc(sizeof(char) * 100);
-	sprintf(buffer, "%08d %-20s %-4s %13.2f", a->number, a->user, a->pin,
+	sprintf(buffer, "%07d %-20s %-4s %13.2f", a->number, a->user, a->pin,
 			a->balance);
 	return buffer;
 }

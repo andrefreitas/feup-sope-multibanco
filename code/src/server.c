@@ -25,12 +25,14 @@ void server_saveAccounts(struct Server *s) {
 	FILE * pFile;
 	pFile = fopen(s->accountsFileName, "w");
 	char* wrStr = malloc(128 * sizeof(char));
-	sprintf(wrStr, "%08d %-20s %-4s %13.2f", s->accounts[i]->number,
+
+	sprintf(wrStr, "%07d %-20s %-4s %13.2f", s->accounts[i]->number,
 			s->accounts[i]->user, s->accounts[i]->pin, s->accounts[i]->balance);
 	fwrite(wrStr, sizeof(char) * strlen(wrStr), 1, pFile);
+
 	for (i = 1; i < s->totalAccounts; i++) {
 		wrStr = malloc(128 * sizeof(char));
-		sprintf(wrStr, "\n%08d %-20s %-4s %13.2f", s->accounts[i]->number,
+		sprintf(wrStr, "\n%07d %-20s %-4s %13.2f", s->accounts[i]->number,
 				s->accounts[i]->user, s->accounts[i]->pin,
 				s->accounts[i]->balance);
 		fwrite(wrStr, sizeof(char) * strlen(wrStr), 1, pFile);
