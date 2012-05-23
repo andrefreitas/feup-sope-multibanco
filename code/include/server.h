@@ -45,6 +45,10 @@ void server_printAccounts(struct Server *s);
 
 void server_sortAccounts(struct Server *s);
 
+void server_addAccountRealloc(struct Server *s, struct Account *a);
+
+int server_accountAlreadyExists(struct Server *s,accountnr_t nr);
+
 struct Account* server_getAccountbyID(struct Server *s, accountnr_t nr);
 
 #endif /* SERVER_C_ */

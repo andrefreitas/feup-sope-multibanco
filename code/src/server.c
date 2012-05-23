@@ -21,63 +21,52 @@
 #define MAX_ACCOUNTS 100
 
 void server_saveAccounts(struct Server *s) {
-	int i = 0;
-	FILE * pFile;
-	pFile = fopen(s->accountsFileName, "w");
-	char* wrStr = malloc(128 * sizeof(char));
+	if(s->totalAccounts>0){
+		int fileDes=open(s->accountsFileName,O_CREAT | O_RDWR,0777);
+		if(fileDes==1) perror("Account file\n");
 
-	sprintf(wrStr, "%07d %-20s %-4s %13.2f", s->accounts[i].number,
-			s->accounts[i].user, s->accounts[i].pin, s->accounts[i].balance);
-	fwrite(wrStr, sizeof(char) * strlen(wrStr), 1, pFile);
+		// Write total nr of accounts
+		char totalAccounts[MAX_STRING];
+		sprintf(totalAccounts,"%07d\n",s->totalAccounts);
+		write(fileDes,totalAccounts,strlen(totalAccounts)*sizeof(char));
 
-	for (i = 1; i < s->totalAccounts; i++) {
-		wrStr = malloc(128 * sizeof(char));
-		sprintf(wrStr, "\n%07d %-20s %-4s %13.2f", s->accounts[i].number,
-				s->accounts[i].user, s->accounts[i].pin,
-				s->accounts[i].balance);
-		fwrite(wrStr, sizeof(char) * strlen(wrStr), 1, pFile);
+		// write all the accounts
+		unsigned int i;
+		char accountBuffer[MAX_STRING];
+		for(i=0; i<s->totalAccounts; i++){
+			sprintf(accountBuffer,"%s\n",account_toString(&s->accounts[i]));
+			write(fileDes,accountBuffer,strlen(accountBuffer)*sizeof(char));
+		}
+
+		close(fileDes);
 	}
-	fclose(pFile);
 }
 
 void server_loadAccounts(struct Server *s) {
-	FILE *file = fopen(s->accountsFileName, "r");
-	if (file != NULL) {
-		printf("\nNão é nulo\n");
-		char line[128];
-		while (fgets(line, sizeof line, file) != NULL) {
-			unsigned int number;
-			char *user;
-			char* pin;
-			double balance;
-			char* word;
-			word = strtok(line, " \n");
-			number = atoi(word);
-			word = strtok(NULL, " \n");
-			user = word;
-			word = strtok(NULL, " \n");
-			pin = word;
-			word = strtok(NULL, " \n");
-			balance = atof(word);
+	 FILE *file = fopen(s->accountsFileName, "r");
+	  if (file != NULL) {
+	  char line[128];
+	  int total=0;
+	  int unsigned i;
 
-			struct Account *a = malloc(sizeof(struct Account));
-			account_create(a, number, user, pin, balance);
-			printf("%s\n",account_toString(a));
-			// Dynamic memory allocation
-			struct Account *accountsTemp;
-			s->totalAccounts++;
-			accountsTemp=realloc(s->accounts, s->totalAccounts * sizeof(struct Account ));
-			s->accounts=accountsTemp;
-			s->accounts[s->totalAccounts-1]=*a;
-			server_sortAccounts(s);
-		}
-		fclose(file);
+	  // Get the total accounts
+	  fgets(line, sizeof line, file);
+	  total=atoi(line);
+	  for(i=0;i<total; i++){
+		  if(fgets(line, sizeof line, file) != NULL){
+			  struct Account *a=malloc(sizeof(struct Account));
+			  account_createFromString(a,line);
+			  server_addAccountRealloc(s,a);
+		  }
+	  }
+
+	  server_sortAccounts(s);
+	  fclose(file);
 	}
+
 }
 
-void server_create(struct Server *s, char *accountsFileName,
-		char *requestFIFOname) {
-	server_loadAccounts(s);
+void server_create(struct Server *s, char *accountsFileName, char *requestFIFOname) {
 	s->accountsFileName = malloc(sizeof(char) * MAX_STRING);
 	s->requestsFIFOname = malloc(sizeof(char) * MAX_STRING);
 	strcpy(s->accountsFileName, accountsFileName);
@@ -85,22 +74,26 @@ void server_create(struct Server *s, char *accountsFileName,
 	mkfifo(s->requestsFIFOname, O_RDONLY);
 	s->accounts = malloc(sizeof(struct Account));
 	s->totalAccounts = 0;
+	server_loadAccounts(s);
 
 }
 
-int server_createAccount(struct Server *s, accountnr_t nr, char *usr, char *pin, double initialBalance) {
+void server_addAccountRealloc(struct Server *s, struct Account *a){
+	// Dynamic memory allocation
+		struct Account *accountsTemp;
+		s->totalAccounts++;
+		accountsTemp=realloc(s->accounts, s->totalAccounts * sizeof(struct Account ));
+		s->accounts=accountsTemp;
+		s->accounts[s->totalAccounts-1]=*a;
+		server_sortAccounts(s);
+}
 
+int server_createAccount(struct Server *s, accountnr_t nr, char *usr, char *pin, double initialBalance) {
+	if(server_accountAlreadyExists(s,nr)) return 0;
 	struct Account *a = malloc(sizeof(struct Account));
 	int status = account_create(a, nr, usr, pin, initialBalance);
-
 	// Dynamic memory allocation
-	struct Account *accountsTemp;
-	s->totalAccounts++;
-	accountsTemp=realloc(s->accounts, s->totalAccounts * sizeof(struct Account ));
-	s->accounts=accountsTemp;
-	s->accounts[s->totalAccounts-1]=*a;
-	server_sortAccounts(s);
-
+	server_addAccountRealloc(s,a);
 	return status;
 }
 int server_createAccountIncrement(struct Server *s, char *usr, char *pin, double initialBalance) {
@@ -109,12 +102,7 @@ int server_createAccountIncrement(struct Server *s, char *usr, char *pin, double
 	int status = account_createAutoIncrement(a, usr, pin, initialBalance);
 
 	// Dynamic memory allocation
-	struct Account *accountsTemp;
-	s->totalAccounts++;
-	accountsTemp=realloc(s->accounts, s->totalAccounts * sizeof(struct Account ));
-	s->accounts=accountsTemp;
-	s->accounts[s->totalAccounts-1]=*a;
-	server_sortAccounts(s);
+	server_addAccountRealloc(s,a);
 	return status;
 }
 int server_deleteAccount(struct Server *s, accountnr_t nr) {
@@ -190,10 +178,18 @@ void server_sortAccounts(struct Server *s){
 	qsort(s->accounts,s->totalAccounts,sizeof(struct Account),account_compare);
 
 }
+
+int server_accountAlreadyExists(struct Server *s,accountnr_t nr){
+	int unsigned i;
+	for(i=0;i<s->totalAccounts; i++){
+		if(s->accounts[i].number==nr) return 1;
+	}
+	return 0;
+}
 int main() {
 	struct Server *s=malloc(sizeof(struct Server));
 	server_create(s,"accounts.txt","requests");
-	server_printAccounts(s);
+	//server_printAccounts(s);
 	server_saveAccounts(s);
 	return 0;
 }

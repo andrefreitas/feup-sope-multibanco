@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#define MAX_BUFFER_LEN 100
 int unsigned lastAccountNumber = 0;
 
 int account_create(struct Account *a, accountnr_t nr, char * usr, char *pin,
@@ -46,7 +47,7 @@ double account_getBalance(struct Account *a) {
 	return a->balance;
 }
 char * account_toString(struct Account *a) {
-	char * buffer = malloc(sizeof(char) * 100);
+	char * buffer = malloc(sizeof(char) * MAX_BUFFER_LEN);
 	sprintf(buffer, "%07d %-20s %-4s %13.2f", a->number, a->user, a->pin, a->balance);
 	return buffer;
 }
@@ -56,4 +57,39 @@ void account_setLastAccountNumber(int nr){
 int account_compare (const void * a1, const void * a2)
 {
   return ( ((struct Account*)a1)->number -((struct Account*)a2)->number);
+}
+
+int account_createFromString(struct Account *a, char *buffer){
+	// Necessary buffers
+	char nrBuffer[MAX_BUFFER_LEN];
+	char userBuffer[17];
+	char pinBuffer[MAX_BUFFER_LEN];
+	char balanceBuffer[MAX_BUFFER_LEN];
+	double balance;
+	unsigned int number;
+
+	// Get the account number
+	strncpy(nrBuffer,buffer,7);
+	nrBuffer[7]='\0';
+	buffer=buffer+8; // Shift right
+	number=atoi(nrBuffer);
+
+	// Get the user name
+	strncpy(userBuffer,buffer,20);
+	userBuffer[20]='\0';
+	buffer=buffer+21; // Shift right
+
+
+	// Get the pin
+	strncpy(pinBuffer,buffer,4);
+	pinBuffer[4]='\0';
+	buffer=buffer+5; // Shift right
+
+	// Get the balance
+	strcpy(balanceBuffer,buffer);
+	balance=atof(balanceBuffer);
+
+	account_create(a,number,userBuffer,pinBuffer,balance);
+	return 1;
+
 }

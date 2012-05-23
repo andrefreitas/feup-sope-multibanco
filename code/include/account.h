@@ -34,6 +34,12 @@ struct Account {
 int account_create(struct Account *a, accountnr_t nr, char *usr, char *pin,
 		double initialBalance);
 
+/** Create an account from a given string
+ * @param *a the pointer for the account struct
+ * @param buffer the string
+ */
+int account_createFromString(struct Account *a, char *buffer);
+
 /** Create an account with autoincrement
  * @param *a the pointer for the account struct
  * @param usr the username
