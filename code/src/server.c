@@ -192,9 +192,14 @@ int server_accountAlreadyExists(struct Server *s,accountnr_t nr){
 }
 
 void server_run(struct Server *s){
+	int total=0;
 	do{
 		struct Request req;
-		request_serverGet(s->requestsFIFOname, &req);
+		char buffer[100];
+		if(request_readFIFO(s->requestsFIFOname,&req,buffer)){
+			total++;
+			printf("Total: %d\n",total);
+		}
 	}while(!s->shutDown);
 	server_saveAccounts(s);
 }

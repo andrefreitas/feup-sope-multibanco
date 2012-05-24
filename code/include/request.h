@@ -8,14 +8,10 @@ struct Request {
 
 void request_create(struct Request* r, unsigned int pid, char* who, char* request);
 
-int request_send(struct Request* r, char* fifoname);
+int request_writeFIFO(char* fifoname,struct Request* r,char *msg);
 
-int request_waitAnswer(char* fifoname);
+int request_readFIFO(char* fifoname,struct Request* r,char *msg);
 
-int request_writeAnswer(char* fifoname, char* answer);
-
-int request_readAnswer(char* fifoname, char* answer);
-
-int request_serverGet(char* serverFIFO, struct Request *r);
+int request_waitFIFO(char* fifoname,struct Request* r,char *msg );
 
 #endif

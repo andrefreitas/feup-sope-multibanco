@@ -13,64 +13,44 @@ void request_create(struct Request* r, unsigned int pid, char* who,
 	r->request = request;
 }
 
-int request_send(struct Request* r, char* fifoname) {
+int request_writeFIFO(char* fifoname,struct Request* r,char *msg){
 	FILE *fifo = fopen(fifoname, "a+");
 	if (fifo) {
 		char wrStr[128];
 
-		sprintf(wrStr, "%s: %d > %s\n", r->who, r->pid, r->request);
+		// If is a request
+		if(r!=NULL)
+			sprintf(wrStr, "%s: %d > %s\n", r->who, r->pid, r->request);
+
+		// If is a common message
+		if(msg!=NULL)
+			strcpy(wrStr,msg);
+
+		// write in fifo
 		fwrite(wrStr, sizeof(char) * strlen(wrStr), 1, fifo);
 
 		return 0;
 	}
+	fclose(fifo);
 	return 1;
 }
 
-int request_waitAnswer(char* fifoname) {
-	FILE *fifo = fopen(fifoname, "r");
-	char line[128];
+int request_waitFIFO(char* fifoname,struct Request* r,char *msg ) {
 
-	while (fgets(line, sizeof line, fifo) == NULL) {
-	}
-
-	if (strcmp(line,"OK")==0 || strcmp(line,"OK\n")==0 )
-		return 1;
-
-	if (strcmp(line,"FAIL")==0 || strcmp(line,"FAIL\n")==0)
-		return 0;
 	return 0;
 }
 
-int request_writeAnswer(char* fifoname, char* answer) {
-	FILE *fifo = fopen(fifoname, "a+");
-	if (fifo) {
-		fwrite(answer, sizeof(char) * strlen(answer), 1, fifo);
-
-		return 0;
-	}
-
-	return 1;
-}
-
-int request_readAnswer(char* fifoname, char* answer) {
-	FILE *fifo = fopen(fifoname, "r");
-	if(fifo)
-	{
-		fgets(answer, sizeof answer, fifo);
-		return 0;
-	}
-
-	return 1;
-}
-int request_serverGet(char* serverFIFO, struct Request *r){
+int request_readFIFO(char* fifoname,struct Request* r,char *msg){
 	int received=0;
 	char line[MAX_LINE];
 	//printf("Server fifo: %s\n", serverFIFO);
-	FILE *file = fopen(serverFIFO, "r");
+	FILE *file = fopen(fifoname, "r");
 	if(file==NULL) perror("Serverfifo: ");
 	if(fgets(line, sizeof line, file)!=NULL){
 				received=1;
+				strcpy(msg,line);
 				printf("Recebeu do cliente: %s\n",line);
 		}
+	fclose(file);
 	return received;
 }
