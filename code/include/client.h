@@ -6,7 +6,7 @@
 
 #ifndef CLIENT_H_
 #define CLIENT_H_
-
+#include "account.h"
 #include <stdio.h>
 
 void client_run();
@@ -26,5 +26,8 @@ void client_deposit();
 void client_transfer();
 
 void client_checkBalance();
+
+extern accountnr_t accountNr;
+extern char * accountPIN;
 
 #endif /* CLIENT_C_ */
