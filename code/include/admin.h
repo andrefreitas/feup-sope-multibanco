@@ -15,12 +15,14 @@ void admin_showMenu();
 
 int admin_getOption();
 
-int createAccount(char *user, char *pin, double initialBalance);
+void admin_handleOption(int option);
 
-char* getAccounts();
+int admin_createAccount();
 
-int deleteAccount(int accNumber);
+int admin_listAccounts();
 
-int shutdownServer();
+int admin_deleteAccount();
+
+int admin_shutdownServer();
 
 #endif /* ADMIN_C_ */

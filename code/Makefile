@@ -10,10 +10,10 @@ client: client.o
 	@mkdir -p bin
 	@gcc obj/client*.o -I./include/ -Wall -o bin/$@
 
-admin: admin.o
+admin: admin.o account.o
 	@echo Assembling $^
 	@mkdir -p bin
-	@gcc obj/admin*.o -I./include/ -Wall -o bin/$@
+	@gcc obj/admin*.o obj/account.o -I./include/ -Wall -o bin/$@
 	
 %.o:
 	@echo Compiling $(basename $@).c
