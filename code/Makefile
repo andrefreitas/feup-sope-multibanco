@@ -5,10 +5,10 @@ server: server.o account.o logs.o
 	@mkdir -p bin
 	@gcc obj/server*.o obj/account.o obj/logs.o -I./include/ -Wall -o bin/$@
 
-client: client.o
+client: client.o account.o
 	@echo Assembling $^
 	@mkdir -p bin
-	@gcc obj/client*.o -I./include/ -Wall -o bin/$@
+	@gcc obj/client*.o obj/account.o -I./include/ -Wall -o bin/$@
 
 admin: admin.o account.o
 	@echo Assembling $^

@@ -1,13 +1,54 @@
+/****************************************************************************
+ * Author:      - André Freitas, p.andrefreitas@gmail.com / ei10036@fe.up.pt
+ * Author:      - Vasco Gonçalves, vascofg@gmail.com / ei10054@fe.up.pt
+ * Copyright:   - 25/05/2012, SOPE, FEUP
+ ****************************************************************************/
 #include <stdio.h>
+#include <stdlib.h>
 #include "client.h"
-
-int show_menu() {
-	printf(
-			"CLIENTE DE MULTIBANCO\n-----------------------\n1 - Levantar dinheiro\n2 - Depositar dinheiro\n3 - Transfer�ncia\n4 - Consultar Saldo\n5 - Sair\n");
-	return get_option();
+#include <string.h>
+#include <unistd.h>
+#define MAX_BUFFER_LEN 100
+#define MAX_PIN_LEN 4
+void cls(void) {
+	// Credit goes to http://snipplr.com/view/15319/hacky-screen-clearing-through-printf/
+	printf("\033[2J\033[0;0f");
+	printf("\033[%d;%df", 0, 0);
 }
 
-int auth() {
+int isInteger(char *buffer){
+	int unsigned i;
+	char numbers[]="1234567890";
+	char *find;
+	for(i=0; i<strlen(buffer); i++){
+		find=strchr(numbers,buffer[i]);
+		if(find==NULL) return 0;
+	}
+	return 1;
+}
+
+int isFloat(char *buffer){
+	int unsigned i;
+	char numbers[]="1234567890.";
+	char *find;
+	for(i=0; i<strlen(buffer); i++){
+		find=strchr(numbers,buffer[i]);
+		if(find==NULL) return 0;
+	}
+	return 1;
+}
+
+void client_showMenu() {
+	printf("CLIENTE DE MULTIBANCO\n-----------------------\n"
+			"1 - Levantar dinheiro\n"
+			"2 - Depositar dinheiro\n"
+			"3 - Transferencia\n"
+			"4 - Consultar Saldo\n"
+			"0 - Sair\n");
+}
+
+
+int client_accountAuth() {
 	int opt, opt2;
 
 	printf("Número de conta: ");
@@ -18,61 +59,60 @@ int auth() {
 	return 0;
 }
 
-int get_option() {
-	int opt, opt2, opt3;
-
-	scanf("%d", &opt);
-	switch (opt) {
-	case 1:
-		printf("Valor a levantar: ");
-		scanf("%d", &opt2);
-		withdraw(opt2);
-		break;
-	case 2:
-		printf("Valor a depositar: ");
-		scanf("%d", &opt2);
-		deposit(opt2);
-	case 3:
-		printf("Conta de destino: ");
-		scanf("%d", &opt2);
-		printf("Valor a transferir: ");
-		scanf("%d", &opt3);
-		transfer(opt2, opt3);
-	case 4:
-		checkBalance();
-	case 5:
-		return 0;
-	}
-	return 1;
+int client_getOption(){
+	char buffer[MAX_BUFFER_LEN];
+	do {
+		printf("> ");
+		gets(buffer);
+	} while (strlen(buffer) != 1);
+	int option;
+	option = atoi(buffer);
+	return option;
 }
 
-int withdraw(int ammount) {
-	//WRITE TO FIFO
-	//WAIT ANSWER
-	return 0;
+void client_handleOption(int option){
+	switch (option) {
+		case 1:
+			client_withdraw();
+			break;
+		case 2:
+			client_deposit();
+			break;
+		case 3:
+			client_transfer();
+			break;
+		case 4:
+			client_checkBalance();
+			break;
+		}
 }
 
-int deposit(int ammount) {
-	//WRITE TO FIFO
-	//WAIT ANSWER
-	return 0;
+void client_withdraw(){
+
 }
 
-int transfer(int destAcc, int ammount) {
-	//WRITE TO FIFO
-	//WAIT ANSWER
-	return 0;
+void client_deposit(){
+
 }
 
-double checkBalance() {
-	//WRITE TO FIFO
-	//WAIT ANSWER
-	return 0;
+void client_transfer(){
+
+}
+
+void client_checkBalance(){
+
+}
+void client_run() {
+	int option = 0;
+	do {
+		cls();
+		client_showMenu();
+		option = client_getOption();
+		client_handleOption(option);
+	} while (option != 0);
 }
 
 int main() {
-	do {
-
-	}while(show_menu());
+	client_run();
 	return 0;
 }

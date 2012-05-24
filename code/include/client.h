@@ -9,18 +9,22 @@
 
 #include <stdio.h>
 
-int show_menu();
+void client_run();
 
-int auth();
+void client_showMenu();
 
-int get_option();
+int client_getOption();
 
-int withdraw(int ammount);
+void client_handleOption(int option);
 
-int deposit(int ammount);
+int client_accountAuth();
 
-int transfer(int destAcc, int ammount);
+void client_withdraw();
 
-double checkBalance();
+void client_deposit();
+
+void client_transfer();
+
+void client_checkBalance();
 
 #endif /* CLIENT_C_ */
