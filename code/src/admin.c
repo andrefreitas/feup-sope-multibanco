@@ -123,9 +123,18 @@ int admin_listAccounts() {
 }
 
 int admin_deleteAccount() {
+	char buffer[MAX_BUFFER_LEN];
+	accountnr_t number;
 	cls();
 	printf("Eliminar conta\n"
 			"----------------\n");
+	// Number:
+	do {
+		printf("Numero de conta: ");
+		gets(buffer);
+		number = atoi(buffer);
+	} while (strlen(buffer) > 7 || strlen(buffer) == 0 || number < 1
+			|| number > 9999999 || !isInteger(buffer));
 	return 0;
 }
 
