@@ -48,7 +48,7 @@ void server_loadAccounts(struct Server *s) {
 	  char line[128];
 	  int total=0;
 	  int unsigned i;
-
+	  int maxAccountnr=1;
 	  // Get the total accounts
 	  fgets(line, sizeof line, file);
 	  total=atoi(line);
@@ -56,12 +56,15 @@ void server_loadAccounts(struct Server *s) {
 		  if(fgets(line, sizeof line, file) != NULL){
 			  struct Account *a=malloc(sizeof(struct Account));
 			  account_createFromString(a,line);
+			  if(a->number>maxAccountnr) maxAccountnr=a->number;
 			  server_addAccountRealloc(s,a);
+
 		  }
 	  }
 
 	  server_sortAccounts(s);
 	  fclose(file);
+	  account_setLastAccountNumber(maxAccountnr);
 	}
 
 }
@@ -191,7 +194,7 @@ int main() {
 	server_create(s,"/tmp/accounts.txt","/tmp/requests");
 	server_createAccountIncrement(s,"Andre Freitas","2232",1212);
 	server_createAccountIncrement(s,"Maria Freitas","2232",1212);
-	//server_printAccounts(s);
+	server_printAccounts(s);
 	server_saveAccounts(s);
 	return 0;
 }
