@@ -7,7 +7,8 @@
 #ifndef SERVER_H_
 #define SERVER_H_
 #include "account.h"
-
+#include "request.h"
+#include <pthread.h>
 /** A struct for defining a server that handles multibanco accounts requests.
  */
 struct Server {
@@ -15,6 +16,7 @@ struct Server {
 	char *requestsFIFOname; /* The name of the requests fifo */
 	struct Account *accounts; /* The list of accounts */
 	int totalAccounts;
+	int shutDown;
 };
 
 void server_create(struct Server *s, char *accountsFileName,char *requestFIFOname);
@@ -51,4 +53,7 @@ int server_accountAlreadyExists(struct Server *s,accountnr_t nr);
 
 struct Account* server_getAccountbyID(struct Server *s, accountnr_t nr);
 
+void server_run(struct Server *s);
+
+void server_handleRequest(struct Server *s,struct Request *r);
 #endif /* SERVER_C_ */

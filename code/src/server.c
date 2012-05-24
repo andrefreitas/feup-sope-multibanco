@@ -74,9 +74,10 @@ void server_create(struct Server *s, char *accountsFileName, char *requestFIFOna
 	s->requestsFIFOname = malloc(sizeof(char) * MAX_STRING);
 	strcpy(s->accountsFileName, accountsFileName);
 	strcpy(s->requestsFIFOname, requestFIFOname);
-	mkfifo(s->requestsFIFOname, O_RDONLY);
+	mkfifo(s->requestsFIFOname, 0777);
 	s->accounts = malloc(sizeof(struct Account));
 	s->totalAccounts = 0;
+	s->shutDown=0;
 	server_loadAccounts(s);
 
 }
@@ -189,12 +190,21 @@ int server_accountAlreadyExists(struct Server *s,accountnr_t nr){
 	}
 	return 0;
 }
+
+void server_run(struct Server *s){
+	do{
+		struct Request req;
+		request_serverGet(s->requestsFIFOname, &req);
+	}while(!s->shutDown);
+	server_saveAccounts(s);
+}
+
+void server_handleRequest(struct Server *s,struct Request *r){
+
+}
 int main() {
 	struct Server *s=malloc(sizeof(struct Server));
 	server_create(s,"/tmp/accounts.txt","/tmp/requests");
-	server_createAccountIncrement(s,"Andre Freitas","2232",1212);
-	server_createAccountIncrement(s,"Maria Freitas","2232",1212);
-	server_printAccounts(s);
-	server_saveAccounts(s);
+	server_run(s);
 	return 0;
 }

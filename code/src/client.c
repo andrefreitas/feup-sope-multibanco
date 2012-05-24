@@ -8,6 +8,7 @@
 #include "client.h"
 #include <string.h>
 #include <unistd.h>
+#include "request.h"
 #define MAX_BUFFER_LEN 100
 #define MAX_PIN_LEN 4
 accountnr_t accountNr;
@@ -194,6 +195,12 @@ void client_run() {
 }
 
 int main() {
-	client_run();
+	struct Request r1,r2;
+	request_create(&r1,12112,"CLIENT","mnnnnnnnnn");
+	request_create(&r2,12112,"ADMIN","hello");
+	request_send(&r1,"/tmp/requests");
+	sleep(4);
+	//request_send(&r2,"/tmp/requests");
+	//client_run();
 	return 0;
 }

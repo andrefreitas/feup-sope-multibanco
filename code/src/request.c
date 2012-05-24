@@ -2,7 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <stdio.h>
+#include <sys/file.h>
+#include <unistd.h>
+#define MAX_LINE 100
 void request_create(struct Request* r, unsigned int pid, char* who,
 		char* request) {
 	r->pid = pid;
@@ -30,12 +33,12 @@ int request_waitAnswer(char* fifoname) {
 	while (fgets(line, sizeof line, fifo) == NULL) {
 	}
 
-	if (line == "OK" || line == "OK\n")
+	if (strcmp(line,"OK")==0 || strcmp(line,"OK\n")==0 )
 		return 1;
 
-	if (line == "FAIL" || line == "FAIL\n")
+	if (strcmp(line,"FAIL")==0 || strcmp(line,"FAIL\n")==0)
 		return 0;
-
+	return 0;
 }
 
 int request_writeAnswer(char* fifoname, char* answer) {
@@ -58,4 +61,16 @@ int request_readAnswer(char* fifoname, char* answer) {
 	}
 
 	return 1;
+}
+int request_serverGet(char* serverFIFO, struct Request *r){
+	int received=0;
+	char line[MAX_LINE];
+	//printf("Server fifo: %s\n", serverFIFO);
+	FILE *file = fopen(serverFIFO, "r");
+	if(file==NULL) perror("Serverfifo: ");
+	if(fgets(line, sizeof line, file)!=NULL){
+				received=1;
+				printf("Recebeu do cliente: %s\n",line);
+		}
+	return received;
 }
