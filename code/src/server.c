@@ -188,7 +188,9 @@ int server_accountAlreadyExists(struct Server *s,accountnr_t nr){
 }
 int main() {
 	struct Server *s=malloc(sizeof(struct Server));
-	server_create(s,"accounts.txt","requests");
+	server_create(s,"/tmp/accounts.txt","/tmp/requests");
+	server_createAccountIncrement(s,"Andre Freitas","2232",1212);
+	server_createAccountIncrement(s,"Maria Freitas","2232",1212);
 	//server_printAccounts(s);
 	server_saveAccounts(s);
 	return 0;

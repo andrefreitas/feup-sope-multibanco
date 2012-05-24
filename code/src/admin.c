@@ -4,45 +4,38 @@
  * Copyright:   - 25/05/2012, SOPE, FEUP
  ****************************************************************************/
 #include <stdio.h>
+#include <stdlib.h>
 #include "account.h"
 #include "admin.h"
+#include <string.h>
 
-int show_menu() {
-	printf(
-			"ADMINISTRADOR DE MULTIBANCO\n--------------------------\n1 - Criar Nova Conta\n2 - Listar Contas\n3 - Eliminar Conta\n4 - Encerrar Servidor\n5 - Sair\n");
-	return get_option();
+#define MAX_BUFFER_LEN 100
+void cls(void) {
+    // Credit goes to http://snipplr.com/view/15319/hacky-screen-clearing-through-printf/
+   printf("\033[2J\033[0;0f");
+   printf("\033[%d;%df", 0, 0);
 }
 
-int get_option() {
-	int opt, opt2;
-	char usr[50], pin[4];
-	double initialBalance;
-	scanf("%d", &opt);
-	switch (opt) {
-	case 1:
-		printf("Nome do utilizador: ");
-		scanf("%s", usr);
-		printf("PIN: ");
-		scanf("%s", pin);
-		printf("Saldo inicial: ");
-		scanf("%f", &initialBalance);
-		createAccount(usr,pin,initialBalance);
-		break;
-	case 2:
-		printf("%s\n", getAccounts());
-		break;
-	case 3:
-		printf("Conta a eliminar: ");
-		scanf("%d", &opt2);
-		deleteAccount(opt2);
-		break;
-	case 4:
-		shutdownServer();
-		break;
-	case 5:
-		return 0;
-	}
-	return 1;
+void admin_showMenu() {
+	printf("ADMINISTRADOR DE MULTIBANCO\n"
+			"--------------------------\n"
+			"1 - Criar Nova Conta\n"
+			"2 - Listar Contas\n"
+			"3 - Eliminar Conta\n"
+			"4 - Encerrar Servidor\n"
+			"0 - Sair\n"
+			"--------------------------\n");
+}
+
+int admin_getOption() {
+	char buffer[MAX_BUFFER_LEN];
+	do{
+		printf("> ");
+		gets(buffer);
+	} while(strlen(buffer)!=1);
+	int option;
+	option=atoi(buffer);
+	return option;
 }
 
 int createAccount(char *user, char *pin, double initialBalance)
@@ -66,9 +59,16 @@ int shutdownServer() {
 	return 0;
 }
 
-int main() {
-	do {
+void admin_run(){
+	int option=0;
+	do{
+		cls();
+		admin_showMenu();
+		option=admin_getOption();
+	}while(option!=0);
+}
 
-	}while(show_menu());
+int main() {
+	admin_run();
 	return 0;
 }

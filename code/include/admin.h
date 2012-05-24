@@ -9,9 +9,11 @@
 
 #include <stdio.h>
 
-int show_menu();
+void admin_run();
 
-int get_option();
+void admin_showMenu();
+
+int admin_getOption();
 
 int createAccount(char *user, char *pin, double initialBalance);
 
