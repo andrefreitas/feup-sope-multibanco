@@ -357,9 +357,21 @@ void server_handleRequest(struct Server *s, struct Request *r) {
 	tmp[14] = '\0';
 	if (strcmp(tmp, "CREATE ACCOUNT") == 0) {
 		tmp = r->request + 15;
-		struct Account *a = malloc(sizeof(struct Account));
-		account_createFromString(a, tmp);
-		//server_addAccountRealloc(s, &a);
+		char* tmp2 = malloc(sizeof(char) * 15);
+		tmp2 = strtok(tmp, " \n\0");
+		accountnr_t accnr = atoi(tmp2);
+		tmp2 = strtok(NULL, " \n\0");
+		char *user = malloc(sizeof(char) * 50);
+		strcpy(user, tmp2);
+		tmp2 = strtok(NULL, " \n\0");
+		char *pin = malloc(sizeof(char) * 4);
+		strcpy(pin, tmp2);
+		tmp2 = strtok(NULL, " \n\0");
+		double balance = atof(tmp2);
+		if (server_createAccount(s, accnr, user, pin, balance))
+			request_writeFIFO(ansfifo, NULL, "OK");
+		else
+			request_writeFIFO(ansfifo, NULL, "FAIL");
 		return;
 	}
 

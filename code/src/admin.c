@@ -119,18 +119,23 @@ int admin_createAccount() {
 		return 1;
 	} else {
 		printf("echo: %s\n", account_toString(&a));
+
 		struct Request r;
-		char msg[10];
+		char *msg = malloc(sizeof(char) * 10);
 		char* wrStr = malloc(sizeof(char) * 128);
-		sprintf(wrStr, "CREATE ACCOUNT %s\n", account_toString(&a));
+		sprintf(wrStr, "CREATE ACCOUNT %i %s %s %f\n", number, user, pin,
+				balance);
 		request_create(&r, getpid(), "ADMIN", wrStr);
 		request_writeFIFO("/tmp/requests", &r, NULL);
-		request_waitFIFO("/tmp/requests", NULL, msg);
+		request_waitFIFO(fifoname, NULL, msg);
+		printf("%s\n", msg);
+		getchar();
 
 		if (strcmp(msg, "OK") == 0)
 			return 1;
 		else
 			return 0;
+
 	}
 }
 
