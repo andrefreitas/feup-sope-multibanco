@@ -168,7 +168,7 @@ int admin_shutdownServer() {
 void admin_run() {
 	int option = 0;
 	fifoname = malloc(sizeof(char) * 50);
-	sprintf(fifoname, "ans%d", getpid());
+	sprintf(fifoname, "/tmp/ans%d", getpid());
 	mkfifo(fifoname, 0777);
 	do {
 		cls();

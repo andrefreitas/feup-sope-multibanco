@@ -222,7 +222,7 @@ void server_handleRequest(struct Server *s, struct Request *r) {
 	printf("%d enviou: %s\n", r->pid, r->request);
 	char *tmp = malloc(sizeof(char) * 200);
 	char* ansfifo = malloc(sizeof(char) * 50);
-	sprintf(ansfifo, "ans%d", r->pid);
+	sprintf(ansfifo, "/tmp/ans%d", r->pid);
 	mkfifo(ansfifo, 0777);
 	if (strcmp(r->request, "SHUTDOWN") == 0) {
 		s->shutDown = 1;
@@ -230,18 +230,41 @@ void server_handleRequest(struct Server *s, struct Request *r) {
 		request_writeFIFO(ansfifo, NULL, "OK");
 		return;
 	}
-	strncpy(tmp, r->request, 14);
+	strcpy(tmp, r->request);
+	tmp[4] = '\0';
+	if (strcmp(tmp, "AUTH") == 0) {
+		tmp = r->request + 5;
+		char* tmp2 = malloc(sizeof(char) * 10);
+		tmp2 = strtok(tmp, " \n\0");
+		accountnr_t accnr = atoi(tmp2);
+		if (server_accountAlreadyExists(s, accnr)) {
+			tmp2 = strtok(NULL, " \n\0");
+			if (strcmp(server_getAccountbyID(s, accnr)->pin, tmp2) == 0) {
+				printf("PASSED\n");
+				request_writeFIFO(ansfifo, NULL, "OK");
+			} else {
+				request_writeFIFO(ansfifo, NULL, "FAIL");
+			}
+			return;
+		} else
+			request_writeFIFO(ansfifo, NULL, "FAIL");
+
+	}
+	strcpy(tmp, r->request);
+	tmp[14] = '\0';
 	if (strcmp(tmp, "CREATE ACCOUNT") == 0) {
 		tmp = r->request + 15;
 		struct Account *a = malloc(sizeof(struct Account));
 		account_createFromString(a, tmp);
 		//server_addAccountRealloc(s, &a);
+		return;
 	}
 
 }
 int main() {
 	struct Server *s = malloc(sizeof(struct Server));
 	server_create(s, "/tmp/accounts.txt", "/tmp/requests");
+	server_createAccount(s, 1234, "vascoFG", "bino", 1000);
 	server_run(s);
 	return 0;
 }

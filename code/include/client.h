@@ -27,6 +27,8 @@ void client_transfer();
 
 void client_checkBalance();
 
+int client_authWithServer();
+
 extern accountnr_t accountNr;
 extern char * accountPIN;
 

@@ -9,10 +9,13 @@
 #include <string.h>
 #include <unistd.h>
 #include "request.h"
+#include <sys/types.h>
+#include <sys/stat.h>
 #define MAX_BUFFER_LEN 100
 #define MAX_PIN_LEN 4
 accountnr_t accountNr;
 char * accountPIN;
+char* fifoname;
 
 void cls(void) {
 	// Credit goes to http://snipplr.com/view/15319/hacky-screen-clearing-through-printf/
@@ -20,24 +23,26 @@ void cls(void) {
 	printf("\033[%d;%df", 0, 0);
 }
 
-int isInteger(char *buffer){
+int isInteger(char *buffer) {
 	int unsigned i;
-	char numbers[]="1234567890";
+	char numbers[] = "1234567890";
 	char *find;
-	for(i=0; i<strlen(buffer); i++){
-		find=strchr(numbers,buffer[i]);
-		if(find==NULL) return 0;
+	for (i = 0; i < strlen(buffer); i++) {
+		find = strchr(numbers, buffer[i]);
+		if (find == NULL)
+			return 0;
 	}
 	return 1;
 }
 
-int isFloat(char *buffer){
+int isFloat(char *buffer) {
 	int unsigned i;
-	char numbers[]="1234567890.";
+	char numbers[] = "1234567890.";
 	char *find;
-	for(i=0; i<strlen(buffer); i++){
-		find=strchr(numbers,buffer[i]);
-		if(find==NULL) return 0;
+	for (i = 0; i < strlen(buffer); i++) {
+		find = strchr(numbers, buffer[i]);
+		if (find == NULL)
+			return 0;
 	}
 	return 1;
 }
@@ -51,14 +56,13 @@ void client_showMenu() {
 			"0 - Sair\n");
 }
 
-
 int client_accountAuth() {
 	char buffer[MAX_BUFFER_LEN];
 	accountnr_t number;
 	char pin[MAX_PIN_LEN + 1];
 	cls();
 	printf("Autenticacao\n"
-	"----------------\n");
+			"----------------\n");
 	// Number:
 	do {
 		printf("Numero: ");
@@ -72,18 +76,18 @@ int client_accountAuth() {
 		printf("PIN: ");
 		gets(buffer);
 
-	} while(strlen(buffer)!=4);
-	strncpy(pin,buffer, 4);
-	pin[4]='\0';
+	} while (strlen(buffer) != 4);
+	strncpy(pin, buffer, 4);
+	pin[4] = '\0';
 
 	// set to the externs
-	accountNr=number;
-	accountPIN= malloc(sizeof(char)*5);
-	strcpy(accountPIN,pin);
+	accountNr = number;
+	accountPIN = malloc(sizeof(char) * 5);
+	strcpy(accountPIN, pin);
 	return 0;
 }
 
-int client_getOption(){
+int client_getOption() {
 	char buffer[MAX_BUFFER_LEN];
 	do {
 		printf("> ");
@@ -94,58 +98,58 @@ int client_getOption(){
 	return option;
 }
 
-void client_handleOption(int option){
+void client_handleOption(int option) {
 	switch (option) {
-		case 1:
-			client_withdraw();
-			break;
-		case 2:
-			client_deposit();
-			break;
-		case 3:
-			client_transfer();
-			break;
-		case 4:
-			client_checkBalance();
-			break;
-		}
+	case 1:
+		client_withdraw();
+		break;
+	case 2:
+		client_deposit();
+		break;
+	case 3:
+		client_transfer();
+		break;
+	case 4:
+		client_checkBalance();
+		break;
+	}
 }
 
-void client_withdraw(){
+void client_withdraw() {
 	char buffer[MAX_BUFFER_LEN];
 	double ammount;
 	cls();
 	printf("Levantamento\n"
-		"----------------\n");
+			"----------------\n");
 
 	// Ammount
-	do{
+	do {
 		printf("Montante: ");
 		gets(buffer);
-		ammount=atof(buffer);
-	}while(ammount<0 || !isFloat(buffer));
+		ammount = atof(buffer);
+	} while (ammount < 0 || !isFloat(buffer));
 
 }
 
-void client_deposit(){
+void client_deposit() {
 	char buffer[MAX_BUFFER_LEN];
 	double ammount;
 	cls();
 	printf("Depósito\n"
-		"----------------\n");
+			"----------------\n");
 
 	// Ammount
-	do{
+	do {
 		printf("Montante: ");
 		gets(buffer);
-		ammount=atof(buffer);
-	}while(ammount<0 || !isFloat(buffer));
+		ammount = atof(buffer);
+	} while (ammount < 0 || !isFloat(buffer));
 
 }
 
-void client_transfer(){
+void client_transfer() {
 	char buffer[MAX_BUFFER_LEN];
-	accountnr_t source,destination;
+	accountnr_t source, destination;
 	double ammount;
 	// Source Account
 	cls();
@@ -156,7 +160,7 @@ void client_transfer(){
 		gets(buffer);
 		source = atoi(buffer);
 	} while (strlen(buffer) > 7 || strlen(buffer) == 0 || source < 1
-			|| source> 9999999 || !isInteger(buffer));
+			|| source > 9999999 || !isInteger(buffer));
 
 	// Destination Account
 	do {
@@ -164,38 +168,56 @@ void client_transfer(){
 		gets(buffer);
 		destination = atoi(buffer);
 	} while (strlen(buffer) > 7 || strlen(buffer) == 0 || destination < 1
-			|| destination > 9999999 || !isInteger(buffer) || destination==source);
+			|| destination > 9999999 || !isInteger(buffer)
+			|| destination == source);
 
 	// Ammount
-	do{
+	do {
 		printf("Montante: ");
 		gets(buffer);
-		ammount=atof(buffer);
-	}while(ammount<0 || !isFloat(buffer));
-
-
+		ammount = atof(buffer);
+	} while (ammount < 0 || !isFloat(buffer));
 
 }
 
-void client_checkBalance(){
+void client_checkBalance() {
 	cls();
 	printf("Ver saldo\n"
 			"----------------\n");
 
 }
 void client_run() {
+	fifoname = malloc(sizeof(char) * 50);
+	sprintf(fifoname, "/tmp/ans%d", getpid());
+	mkfifo(fifoname, 0777);
 	client_accountAuth();
-	int option = 0;
+	/*int option = 0;
 	do {
 		cls();
 		client_showMenu();
 		option = client_getOption();
 		client_handleOption(option);
-	} while (option != 0);
+	} while (option != 0);*/
+	if(client_authWithServer())
+		printf("AUTHED\n");
+	else
+		printf("FAILED\n");
+}
+
+int client_authWithServer() {
+	struct Request r;
+	char* msg = malloc(sizeof(char) * 10);
+	char* wrStr = malloc(sizeof(char)*50);
+	sprintf(wrStr, "AUTH %i %s", accountNr, accountPIN);
+	request_create(&r, getpid(), "CLIENT", wrStr);
+	request_writeFIFO("/tmp/requests", &r, NULL);
+	request_waitFIFO(fifoname, NULL, msg);
+	if (strcmp(msg, "OK") == 0)
+		return 1;
+	return 0;
 }
 
 int main() {
-	request_writeFIFO("/tmp/requests",NULL,"Ola bom dia");
-	//client_run();
+	client_run();
 	return 0;
 }
