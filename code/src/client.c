@@ -240,7 +240,7 @@ void client_run() {
 		client_showMenu();
 		option = client_getOption();
 		if (!client_authWithServer()) {
-			printf("AUTH FAILED\n");
+			printf("Autenticação falhada\n");
 			getchar();
 			exit(0);
 		}
