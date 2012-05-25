@@ -116,7 +116,7 @@ int admin_createAccount() {
 		printf("echo: %s\n", account_toString(&a));
 		struct Request r;
 		char* wrStr = malloc(sizeof(char)*128);
-		sprintf(wrStr, "CREATE ACCOUNT %d %s %s %f", number, user, pin, balance);
+		sprintf(wrStr, "CREATE ACCOUNT %s\n", account_toString(&a));
 		request_create(&r, getpid(), "ADMIN", wrStr);
 		request_writeFIFO("/tmp/requests", &r, NULL);
 		return 0;
