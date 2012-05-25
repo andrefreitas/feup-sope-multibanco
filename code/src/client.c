@@ -171,18 +171,19 @@ void client_deposit() {
 
 void client_transfer() {
 	char buffer[MAX_BUFFER_LEN];
-	accountnr_t source, destination;
+	//accountnr_t source;
+	accountnr_t destination;
 	double ammount;
-	// Source Account
-	cls();
-	printf("Transferência\n"
-			"----------------\n");
-	do {
-		printf("Conta de Origem: ");
-		gets(buffer);
-		source = atoi(buffer);
-	} while (strlen(buffer) > 7 || strlen(buffer) == 0 || source < 1
-			|| source > 9999999 || !isInteger(buffer));
+	// Source Account  (THIS ONE)
+	/*cls();
+	 printf("Transferência\n"
+	 "----------------\n");
+	 do {
+	 printf("Conta de Origem: ");
+	 gets(buffer);
+	 source = atoi(buffer);
+	 } while (strlen(buffer) > 7 || strlen(buffer) == 0 || source < 1
+	 || source > 9999999 || !isInteger(buffer));*/
 
 	// Destination Account
 	do {
@@ -191,7 +192,7 @@ void client_transfer() {
 		destination = atoi(buffer);
 	} while (strlen(buffer) > 7 || strlen(buffer) == 0 || destination < 1
 			|| destination > 9999999 || !isInteger(buffer)
-			|| destination == source);
+			|| destination == accountNr);
 
 	// Ammount
 	do {
@@ -199,6 +200,17 @@ void client_transfer() {
 		gets(buffer);
 		ammount = atof(buffer);
 	} while (ammount < 0 || !isFloat(buffer));
+
+	struct Request r;
+	char* msg = malloc(sizeof(char) * 10);
+	char* wrStr = malloc(sizeof(char) * 50);
+	sprintf(wrStr, "TRANSFER %i %i %f", accountNr, destination, ammount);
+	request_create(&r, getpid(), "CLIENT", wrStr);
+	request_writeFIFO("/tmp/requests", &r, NULL);
+	request_waitFIFO(fifoname, NULL, msg);
+
+	printf("%s\n", msg);
+	getchar();
 
 }
 

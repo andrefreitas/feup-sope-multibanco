@@ -149,13 +149,13 @@ int server_transfer(struct Server *s, accountnr_t source,
 		accountnr_t destination, double amount) {
 	struct Account *srcacc = server_getAccountbyID(s, source);
 	struct Account *destacc = server_getAccountbyID(s, destination);
-	if (srcacc != NULL && destacc != NULL
-			&& account_getBalance(srcacc) >= amount) {
-		account_withdraw(srcacc, amount);
-		account_deposit(destacc, amount);
-		return 0;
+	if (srcacc != NULL && destacc != NULL) {
+		if (account_withdraw(srcacc, amount)) {
+			account_deposit(destacc, amount);
+			return 1;
+		}
 	}
-	return 1;
+	return 0;
 
 }
 int server_withdraw(struct Server *s, accountnr_t nr, double amount) {
@@ -292,6 +292,30 @@ void server_handleRequest(struct Server *s, struct Request *r) {
 	}
 
 	strcpy(tmp, r->request);
+	tmp[8] = '\0';
+	if (strcmp(tmp, "TRANSFER") == 0) {
+		tmp = r->request + 9;
+		char* tmp2 = malloc(sizeof(char) * 15);
+		tmp2 = strtok(tmp, " \n\0");
+		accountnr_t accnr = atoi(tmp2);
+		if (server_accountAlreadyExists(s, accnr)) {
+			tmp2 = strtok(NULL, " \n\0");
+			accountnr_t destaccnr = atoi(tmp2);
+			if (server_accountAlreadyExists(s, destaccnr)) {
+				tmp2 = strtok(NULL, " \n\0");
+				double ammount = atof(tmp2);
+				if (server_transfer(s, accnr, destaccnr, ammount))
+					request_writeFIFO(ansfifo, NULL, "OK");
+				else
+					request_writeFIFO(ansfifo, NULL, "FAIL");
+			} else
+				request_writeFIFO(ansfifo, NULL, "FAIL");
+		} else
+			request_writeFIFO(ansfifo, NULL, "FAIL");
+		return;
+	}
+
+	strcpy(tmp, r->request);
 	tmp[14] = '\0';
 	if (strcmp(tmp, "CREATE ACCOUNT") == 0) {
 		tmp = r->request + 15;
@@ -305,7 +329,8 @@ void server_handleRequest(struct Server *s, struct Request *r) {
 int main() {
 	struct Server *s = malloc(sizeof(struct Server));
 	server_create(s, "/tmp/accounts.txt", "/tmp/requests");
-	server_createAccount(s, 1234, "vascoFG", "bino", 1000);
+	server_createAccount(s, 1234, "vascoFG", "bino", 0);
+	server_createAccount(s, 4321, "vascoFG", "bino", 0);
 	server_run(s);
 	return 0;
 }
