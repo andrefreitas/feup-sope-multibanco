@@ -21,13 +21,13 @@ int request_writeFIFO(char* fifoname, struct Request* r, char *msg) {
 		// If is a request
 		if (r != NULL) {
 			sprintf(wrStr, "%s: %d > %s\n", r->who, r->pid, r->request);
-			printf("SENT REQUEST: %s\n", wrStr);
+			//printf("SENT REQUEST: %s\n", wrStr);
 		}
 
 		// If is a common message
 		if (msg != NULL) {
 			strcpy(wrStr, msg);
-			printf("ANSWERED: %s\n", wrStr);
+			//printf("ANSWERED: %s\n", wrStr);
 		}
 
 		// write in fifo
@@ -49,7 +49,7 @@ int request_waitFIFO(char* fifoname, struct Request* r, char *msg) {
 		fgets(line, sizeof(line), file);
 	} while (line == NULL);
 	strcpy(msg, line);
-	printf("GOT ANSWER: %s\n", msg);
+	//printf("GOT ANSWER: %s\n", msg);
 	fclose(file);
 	return 0;
 }
@@ -64,10 +64,10 @@ int request_readFIFO(char* fifoname, struct Request* r, char *msg) {
 	if (fgets(line, sizeof(line), file) != NULL) {
 		received = 1;
 		if (strchr(line, '>') == NULL) {
-			printf("MESSAGE: %s\n", line);
+			//printf("MESSAGE: %s\n", line);
 			strcpy(msg, line);
 		} else {
-			printf("GOT REQUEST: %s\n", line);
+			//printf("GOT REQUEST: %s\n", line);
 			char* tmp = malloc(sizeof(char) * MAX_LINE);
 			strcpy(tmp, line);
 			char* pid;

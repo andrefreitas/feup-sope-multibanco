@@ -22,6 +22,7 @@
 #define MAX_ACCOUNTS 100
 
 struct Server *currentServer;
+pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
 
 void server_saveAccounts(struct Server *s) {
 	if (s->totalAccounts > 0) {
@@ -218,7 +219,7 @@ void server_run(struct Server *s) {
 		if (request_readFIFO(s->requestsFIFOname, req, buffer)) {
 			if (req->pid != 0) {
 				pthread_t thread;
-				currentServer=s;
+				currentServer = s;
 				pthread_create(&thread, NULL, server_handleRequestThread, req);
 				//server_handleRequest(s, req);
 			}
@@ -231,7 +232,9 @@ void server_run(struct Server *s) {
 
 void * server_handleRequestThread(void * arg) {
 	int i;
+	pthread_mutex_lock(&mut);
 	server_handleRequest(currentServer, (struct Request *) arg);
+	pthread_mutex_unlock(&mut);
 	return NULL;
 }
 
