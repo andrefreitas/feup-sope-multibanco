@@ -154,11 +154,11 @@ int admin_deleteAccount() {
 int admin_shutdownServer() {
 	cls();
 	struct Request r;
-	char* msg = malloc(sizeof(char)*10);
+	char* msg = malloc(sizeof(char) * 10);
 	request_create(&r, getpid(), "ADMIN", "SHUTDOWN");
 	request_writeFIFO("/tmp/requests", &r, NULL);
 	request_waitFIFO(fifoname, NULL, msg);
-	if(strcmp(msg, "OK")==0)
+	if (strcmp(msg, "OK") == 0)
 		exit(0);
 	printf("Encerrar Servidor\n"
 			"----------------\n");

@@ -133,11 +133,7 @@ int server_deleteAccount(struct Server *s, accountnr_t nr) {
 
 double server_getAccountBalance(struct Server *s, accountnr_t nr) {
 	struct Account *a = server_getAccountbyID(s, nr);
-	if (a != NULL) {
-		account_getBalance(a);
-		return 0;
-	}
-	return 1;
+	return account_getBalance(a);
 }
 
 int server_depositAccount(struct Server *s, accountnr_t nr, double amount) {
@@ -219,7 +215,6 @@ void server_run(struct Server *s) {
 }
 
 void server_handleRequest(struct Server *s, struct Request *r) {
-	printf("%d enviou: %s\n", r->pid, r->request);
 	char *tmp = malloc(sizeof(char) * 200);
 	char* ansfifo = malloc(sizeof(char) * 50);
 	sprintf(ansfifo, "/tmp/ans%d", r->pid);
@@ -240,16 +235,30 @@ void server_handleRequest(struct Server *s, struct Request *r) {
 		if (server_accountAlreadyExists(s, accnr)) {
 			tmp2 = strtok(NULL, " \n\0");
 			if (strcmp(server_getAccountbyID(s, accnr)->pin, tmp2) == 0) {
-				printf("PASSED\n");
 				request_writeFIFO(ansfifo, NULL, "OK");
 			} else {
 				request_writeFIFO(ansfifo, NULL, "FAIL");
 			}
-			return;
 		} else
 			request_writeFIFO(ansfifo, NULL, "FAIL");
-
+		return;
 	}
+
+	strcpy(tmp, r->request);
+	tmp[7] = '\0';
+	if (strcmp(tmp, "BALANCE") == 0) {
+		tmp = r->request + 8;
+		char* tmp2 = malloc(sizeof(char) * 15);
+		tmp2 = strtok(tmp, " \n\0");
+		accountnr_t accnr = atoi(tmp2);
+		if (server_accountAlreadyExists(s, accnr)) {
+			sprintf(tmp2, "%f", server_getAccountBalance(s, accnr));
+			request_writeFIFO(ansfifo, NULL, tmp2);
+		} else
+			request_writeFIFO(ansfifo, NULL, "FAIL");
+		return;
+	}
+
 	strcpy(tmp, r->request);
 	tmp[14] = '\0';
 	if (strcmp(tmp, "CREATE ACCOUNT") == 0) {

@@ -184,6 +184,15 @@ void client_checkBalance() {
 	cls();
 	printf("Ver saldo\n"
 			"----------------\n");
+	struct Request r;
+	char* msg = malloc(sizeof(char) * 10);
+	char* wrStr = malloc(sizeof(char) * 50);
+	sprintf(wrStr, "BALANCE %i", accountNr);
+	request_create(&r, getpid(), "CLIENT", wrStr);
+	request_writeFIFO("/tmp/requests", &r, NULL);
+	request_waitFIFO(fifoname, NULL, msg);
+	printf("Saldo: %s\n", msg);
+	getchar();
 
 }
 void client_run() {
@@ -191,23 +200,24 @@ void client_run() {
 	sprintf(fifoname, "/tmp/ans%d", getpid());
 	mkfifo(fifoname, 0777);
 	client_accountAuth();
-	/*int option = 0;
+	int option = 0;
 	do {
 		cls();
 		client_showMenu();
 		option = client_getOption();
+		if (!client_authWithServer()) {
+			printf("AUTH FAILED\n");
+			getchar();
+			exit(0);
+		}
 		client_handleOption(option);
-	} while (option != 0);*/
-	if(client_authWithServer())
-		printf("AUTHED\n");
-	else
-		printf("FAILED\n");
+	} while (option != 0);
 }
 
 int client_authWithServer() {
 	struct Request r;
 	char* msg = malloc(sizeof(char) * 10);
-	char* wrStr = malloc(sizeof(char)*50);
+	char* wrStr = malloc(sizeof(char) * 50);
 	sprintf(wrStr, "AUTH %i %s", accountNr, accountPIN);
 	request_create(&r, getpid(), "CLIENT", wrStr);
 	request_writeFIFO("/tmp/requests", &r, NULL);
