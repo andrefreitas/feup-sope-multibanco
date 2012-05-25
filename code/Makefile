@@ -5,15 +5,15 @@ server: server.o account.o logs.o request.o
 	@mkdir -p bin
 	@gcc obj/server*.o obj/account.o obj/logs.o obj/request.o -I./include/ -Wall -o bin/$@ -lpthread
 
-client: client.o account.o request.o 
+client: client.o account.o logs.o request.o 
 	@echo Assembling $^
 	@mkdir -p bin
-	@gcc obj/client*.o obj/account.o obj/request.o -I./include/ -Wall -o bin/$@
+	@gcc obj/client*.o obj/account.o obj/logs.o obj/request.o -I./include/ -Wall -o bin/$@
 
-admin: admin.o account.o request.o
+admin: admin.o account.o logs.o request.o
 	@echo Assembling $^
 	@mkdir -p bin
-	@gcc obj/admin*.o obj/account.o obj/request.o -I./include/ -Wall -o bin/$@
+	@gcc obj/admin*.o obj/account.o obj/logs.o obj/request.o -I./include/ -Wall -o bin/$@
 	
 %.o:
 	@echo Compiling $(basename $@).c

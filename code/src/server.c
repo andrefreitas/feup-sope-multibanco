@@ -85,6 +85,7 @@ void server_create(struct Server *s, char *accountsFileName,
 	s->accounts = malloc(sizeof(struct Account));
 	s->totalAccounts = 0;
 	s->shutDown = 0;
+	logs_createFile();
 	server_loadAccounts(s);
 
 }
@@ -211,7 +212,7 @@ int server_accountAlreadyExists(struct Server *s, accountnr_t nr) {
 }
 
 void server_run(struct Server *s) {
-	int total = 0;
+	//int total = 0;
 	do {
 		char buffer[100];
 		struct Request *req = malloc(sizeof(struct Request));
@@ -220,18 +221,23 @@ void server_run(struct Server *s) {
 			if (req->pid != 0) {
 				pthread_t thread;
 				currentServer = s;
+				/*if (strcmp(req->request, "SHUTDOWN") == 0) { //SHUTDOWN SERVER
+				 char* ansfifo = malloc(sizeof(char) * 50);
+				 sprintf(ansfifo, "/tmp/ans%d", req->pid);
+				 s->shutDown = 1;
+
+				 request_writeFIFO(ansfifo, NULL, "OK");
+				 } else*/
 				pthread_create(&thread, NULL, server_handleRequestThread, req);
 				//server_handleRequest(s, req);
 			}
-			total++;
-			printf("Total: %d\n", total);
+			//total++;
+			//printf("Total: %d\n", total);
 		}
-	} while (!s->shutDown);
-	server_saveAccounts(s);
+	} while (1);
 }
 
 void * server_handleRequestThread(void * arg) {
-	int i;
 	pthread_mutex_lock(&mut);
 	server_handleRequest(currentServer, (struct Request *) arg);
 	pthread_mutex_unlock(&mut);
@@ -247,7 +253,8 @@ void server_handleRequest(struct Server *s, struct Request *r) {
 		s->shutDown = 1;
 
 		request_writeFIFO(ansfifo, NULL, "OK");
-		return;
+		server_saveAccounts(s);
+		exit(0);
 	}
 
 	if (strcmp(r->request, "LIST") == 0) {
