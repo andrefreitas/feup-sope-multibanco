@@ -57,7 +57,7 @@ int request_waitFIFO(char* fifoname, struct Request* r, char *msg) {
 	} while (line == NULL);
 	strcpy(msg, line);
 	sprintf(log, "GOT ANSWER %s ON FILE %s", msg, fifoname);
-	logs_addEvent(log, "->");
+	logs_addEvent(log, "<-");
 	//printf("GOT ANSWER: %s\n", msg);
 	fclose(file);
 	return 0;
