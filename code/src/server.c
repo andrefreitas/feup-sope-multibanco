@@ -15,10 +15,13 @@
 #include "logs.h"
 #include <unistd.h>
 #include <time.h>
+#include <pthread.h>
 
 // Necessary constants
 #define MAX_STRING 100
 #define MAX_ACCOUNTS 100
+
+struct Server *currentServer;
 
 void server_saveAccounts(struct Server *s) {
 	if (s->totalAccounts > 0) {
@@ -182,10 +185,10 @@ void server_printAccounts(struct Server *s) {
 char* server_getAccounts(struct Server *s) {
 	char* retStr = malloc(sizeof(char) * s->totalAccounts * 100);
 	int unsigned i = 0;
-	strcpy(retStr, account_toString(&s->accounts[i]));
+	strcpy(retStr, account_toStringFIFO(&s->accounts[i]));
 	for (i = 1; i < s->totalAccounts; i++) {
 		strcat(retStr, ">");
-		strcat(retStr, account_toString(&s->accounts[i]));
+		strcat(retStr, account_toStringFIFO(&s->accounts[i]));
 	}
 
 	return retStr;
@@ -213,13 +216,23 @@ void server_run(struct Server *s) {
 		struct Request *req = malloc(sizeof(struct Request));
 		req->pid = 0;
 		if (request_readFIFO(s->requestsFIFOname, req, buffer)) {
-			if (req->pid != 0)
-				server_handleRequest(s, req);
+			if (req->pid != 0) {
+				pthread_t thread;
+				currentServer=s;
+				pthread_create(&thread, NULL, server_handleRequestThread, req);
+				//server_handleRequest(s, req);
+			}
 			total++;
 			printf("Total: %d\n", total);
 		}
 	} while (!s->shutDown);
 	server_saveAccounts(s);
+}
+
+void * server_handleRequestThread(void * arg) {
+	int i;
+	server_handleRequest(currentServer, (struct Request *) arg);
+	return NULL;
 }
 
 void server_handleRequest(struct Server *s, struct Request *r) {
@@ -360,7 +373,7 @@ void server_handleRequest(struct Server *s, struct Request *r) {
 		char* tmp2 = malloc(sizeof(char) * 15);
 		tmp2 = strtok(tmp, " \n\0");
 		accountnr_t accnr = atoi(tmp2);
-		tmp2 = strtok(NULL, " \n\0");
+		tmp2 = strtok(NULL, "|\n\0");
 		char *user = malloc(sizeof(char) * 50);
 		strcpy(user, tmp2);
 		tmp2 = strtok(NULL, " \n\0");
@@ -376,11 +389,13 @@ void server_handleRequest(struct Server *s, struct Request *r) {
 	}
 
 }
+
 int main() {
 	struct Server *s = malloc(sizeof(struct Server));
 	server_create(s, "/tmp/accounts.txt", "/tmp/requests");
-	server_createAccount(s, 1234, "vascoFG", "bino", 0);
-	server_createAccount(s, 4321, "vascoFG", "bino", 0);
+	//server_createAccount(s, 1231, "vascoFG", "bino", 0);
+	/*server_createAccount(s, 1234, "vascoFG", "bino", 0);
+	 server_createAccount(s, 4321, "vascoFG", "bino", 0);*/
 	server_run(s);
 	return 0;
 }

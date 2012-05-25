@@ -42,7 +42,7 @@ int request_writeFIFO(char* fifoname, struct Request* r, char *msg) {
 
 int request_waitFIFO(char* fifoname, struct Request* r, char *msg) {
 	FILE *file = fopen(fifoname, "r");
-	char line[MAX_LINE];
+	char line[1000];
 	if (file == NULL)
 		perror("Ansfifo: ");
 	do {
@@ -50,6 +50,7 @@ int request_waitFIFO(char* fifoname, struct Request* r, char *msg) {
 	} while (line == NULL);
 	strcpy(msg, line);
 	printf("GOT ANSWER: %s\n", msg);
+	fclose(file);
 	return 0;
 }
 

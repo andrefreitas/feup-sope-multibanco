@@ -53,6 +53,12 @@ char * account_toString(struct Account *a) {
 			a->balance);
 	return buffer;
 }
+char * account_toStringFIFO(struct Account *a) {
+	char * buffer = malloc(sizeof(char) * MAX_BUFFER_LEN);
+	sprintf(buffer, "%07d %-20s|%-4s %13.2f", a->number, a->user, a->pin,
+			a->balance);
+	return buffer;
+}
 void account_setLastAccountNumber(int nr) {
 	lastAccountNumber = nr;
 }

@@ -102,7 +102,7 @@ int admin_createAccount() {
 		printf("PIN(size=4): ");
 		gets(buffer);
 
-	} while (strlen(buffer) != 4);
+	} while (strlen(buffer) != 4 || (strchr(buffer, ' ')) != NULL); //NO SPACES IN PIN
 	strncpy(pin, buffer, 4);
 	pin[4] = '\0';
 
@@ -123,7 +123,7 @@ int admin_createAccount() {
 		struct Request r;
 		char *msg = malloc(sizeof(char) * 10);
 		char* wrStr = malloc(sizeof(char) * 128);
-		sprintf(wrStr, "CREATE ACCOUNT %i %s %s %f\n", number, user, pin,
+		sprintf(wrStr, "CREATE ACCOUNT %i %s|%s %f\n", number, user, pin,
 				balance);
 		request_create(&r, getpid(), "ADMIN", wrStr);
 		request_writeFIFO("/tmp/requests", &r, NULL);
@@ -162,6 +162,8 @@ void admin_listAccounts() {
 				break;
 			if (msg[i] == '>')
 				msg[i] = '\n';
+			if (msg[i] == '|')
+				msg[i] = ' ';
 		}
 		printf("%s", msg);
 	}

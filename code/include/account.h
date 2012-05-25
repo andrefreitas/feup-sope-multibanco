@@ -86,6 +86,13 @@ double account_getBalance(struct Account *a);
  */
 char * account_toString(struct Account *a);
 
+/** Get the char pointer of the account information (TO SEND IN FIFO).
+ * Can be useful to write in the files.
+ * @param *a the pointer for the account struct
+ * @return a char pointer
+ */
+char * account_toStringFIFO(struct Account *a);
+
 /** Compare 2 accounts
  */
 

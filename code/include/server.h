@@ -62,4 +62,6 @@ struct Account* server_getAccountbyID(struct Server *s, accountnr_t nr);
 void server_run(struct Server *s);
 
 void server_handleRequest(struct Server *s, struct Request *r);
+
+void * server_handleRequestThread(void * arg);
 #endif /* SERVER_C_ */
