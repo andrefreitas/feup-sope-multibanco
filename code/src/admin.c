@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include "account.h"
 #include "admin.h"
+#include "request.h"
 #include <string.h>
 #include <unistd.h>
 #define MAX_BUFFER_LEN 100
@@ -140,6 +141,9 @@ int admin_deleteAccount() {
 
 int admin_shutdownServer() {
 	cls();
+	struct Request r;
+	request_create(&r, getpid(), "ADMIN", "SHUTDOWN");
+	request_writeFIFO("/tmp/requests", &r, NULL);
 	printf("Encerrar Servidor\n"
 			"----------------\n");
 	return 0;

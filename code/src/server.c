@@ -171,7 +171,7 @@ struct Account* server_getAccountbyID(struct Server *s, accountnr_t nr) {
 	return a;
 }
 
-void server_printAccounts(struct Server *s){
+void server_printAccounutts(struct Server *s){
 	int unsigned i=0;
 	for(i=0; i<s->totalAccounts; i++){
 		printf("%s\n",account_toString(&s->accounts[i]));
@@ -197,6 +197,7 @@ void server_run(struct Server *s){
 		struct Request req;
 		char buffer[100];
 		if(request_readFIFO(s->requestsFIFOname,&req,buffer)){
+			server_handleRequest(s, &req);
 			total++;
 			printf("Total: %d\n",total);
 		}
@@ -205,6 +206,8 @@ void server_run(struct Server *s){
 }
 
 void server_handleRequest(struct Server *s,struct Request *r){
+	if(strcmp(r->request, "SHUTDOWN")==0)
+		s->shutDown=1;
 
 }
 int main() {

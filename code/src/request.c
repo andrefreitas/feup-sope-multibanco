@@ -48,6 +48,13 @@ int request_readFIFO(char* fifoname,struct Request* r,char *msg){
 	if(file==NULL) perror("Serverfifo: ");
 	if(fgets(line, sizeof line, file)!=NULL){
 				received=1;
+				char* pid;
+				char* who;
+				char* req;
+				who = strtok (line,": >\n");
+				pid = strtok (NULL,": >\n");
+				req = strtok (NULL,": >\n");
+				request_create(r, atoi(pid), who, req);
 				strcpy(msg,line);
 				printf("Recebeu do cliente: %s\n",line);
 		}
