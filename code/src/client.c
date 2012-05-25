@@ -129,6 +129,17 @@ void client_withdraw() {
 		ammount = atof(buffer);
 	} while (ammount < 0 || !isFloat(buffer));
 
+	struct Request r;
+	char* msg = malloc(sizeof(char) * 10);
+	char* wrStr = malloc(sizeof(char) * 50);
+	sprintf(wrStr, "WITHDRAW %i %f", accountNr, ammount);
+	request_create(&r, getpid(), "CLIENT", wrStr);
+	request_writeFIFO("/tmp/requests", &r, NULL);
+	request_waitFIFO(fifoname, NULL, msg);
+
+	printf("%s\n", msg);
+	getchar();
+
 }
 
 void client_deposit() {
@@ -152,6 +163,9 @@ void client_deposit() {
 	request_create(&r, getpid(), "CLIENT", wrStr);
 	request_writeFIFO("/tmp/requests", &r, NULL);
 	request_waitFIFO(fifoname, NULL, msg);
+
+	printf("%s\n", msg);
+	getchar();
 
 }
 

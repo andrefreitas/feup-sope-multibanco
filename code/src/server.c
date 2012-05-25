@@ -158,13 +158,9 @@ int server_transfer(struct Server *s, accountnr_t source,
 	return 1;
 
 }
-int server_witdhdraw(struct Server *s, accountnr_t nr, double amount) {
+int server_withdraw(struct Server *s, accountnr_t nr, double amount) {
 	struct Account *a = server_getAccountbyID(s, nr);
-	if (a != NULL && account_getBalance(a) >= amount) {
-		account_withdraw(a, amount);
-		return 0;
-	}
-	return 1;
+	return account_withdraw(a, amount);
 }
 
 struct Account* server_getAccountbyID(struct Server *s, accountnr_t nr) {
@@ -271,6 +267,25 @@ void server_handleRequest(struct Server *s, struct Request *r) {
 			double ammount = atof(tmp2);
 			server_depositAccount(s, accnr, ammount);
 			request_writeFIFO(ansfifo, NULL, "OK");
+		} else
+			request_writeFIFO(ansfifo, NULL, "FAIL");
+		return;
+	}
+
+	strcpy(tmp, r->request);
+	tmp[8] = '\0';
+	if (strcmp(tmp, "WITHDRAW") == 0) {
+		tmp = r->request + 9;
+		char* tmp2 = malloc(sizeof(char) * 15);
+		tmp2 = strtok(tmp, " \n\0");
+		accountnr_t accnr = atoi(tmp2);
+		if (server_accountAlreadyExists(s, accnr)) {
+			tmp2 = strtok(NULL, " \n\0");
+			double ammount = atof(tmp2);
+			if (server_withdraw(s, accnr, ammount))
+				request_writeFIFO(ansfifo, NULL, "OK");
+			else
+				request_writeFIFO(ansfifo, NULL, "FAIL");
 		} else
 			request_writeFIFO(ansfifo, NULL, "FAIL");
 		return;

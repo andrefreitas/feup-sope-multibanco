@@ -41,7 +41,7 @@ int server_authAccount(struct Server *s, accountnr_t nr, char *pinGiven);
 
 int server_transfer(struct Server *s, accountnr_t source, accountnr_t destination, double amount);
 
-int server_witdhdraw(struct Server *s, accountnr_t nr, double amount);
+int server_withdraw(struct Server *s, accountnr_t nr, double amount);
 
 void server_printAccounts(struct Server *s);
 
