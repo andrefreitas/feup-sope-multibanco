@@ -260,6 +260,23 @@ void server_handleRequest(struct Server *s, struct Request *r) {
 	}
 
 	strcpy(tmp, r->request);
+	tmp[7] = '\0';
+	if (strcmp(tmp, "DEPOSIT") == 0) {
+		tmp = r->request + 8;
+		char* tmp2 = malloc(sizeof(char) * 15);
+		tmp2 = strtok(tmp, " \n\0");
+		accountnr_t accnr = atoi(tmp2);
+		if (server_accountAlreadyExists(s, accnr)) {
+			tmp2 = strtok(NULL, " \n\0");
+			double ammount = atof(tmp2);
+			server_depositAccount(s, accnr, ammount);
+			request_writeFIFO(ansfifo, NULL, "OK");
+		} else
+			request_writeFIFO(ansfifo, NULL, "FAIL");
+		return;
+	}
+
+	strcpy(tmp, r->request);
 	tmp[14] = '\0';
 	if (strcmp(tmp, "CREATE ACCOUNT") == 0) {
 		tmp = r->request + 15;

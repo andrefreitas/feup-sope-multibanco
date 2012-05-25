@@ -145,6 +145,14 @@ void client_deposit() {
 		ammount = atof(buffer);
 	} while (ammount < 0 || !isFloat(buffer));
 
+	struct Request r;
+	char* msg = malloc(sizeof(char) * 10);
+	char* wrStr = malloc(sizeof(char) * 50);
+	sprintf(wrStr, "DEPOSIT %i %f", accountNr, ammount);
+	request_create(&r, getpid(), "CLIENT", wrStr);
+	request_writeFIFO("/tmp/requests", &r, NULL);
+	request_waitFIFO(fifoname, NULL, msg);
+
 }
 
 void client_transfer() {
