@@ -220,14 +220,19 @@ void server_run(struct Server *s) {
 
 void server_handleRequest(struct Server *s, struct Request *r) {
 	printf("%d enviou: %s\n", r->pid, r->request);
-	char *tmp = malloc(sizeof(char)*200);
+	char *tmp = malloc(sizeof(char) * 200);
+	char* ansfifo = malloc(sizeof(char) * 50);
+	sprintf(ansfifo, "ans%d", r->pid);
+	mkfifo(ansfifo, 0777);
 	if (strcmp(r->request, "SHUTDOWN") == 0) {
 		s->shutDown = 1;
+
+		request_writeFIFO(ansfifo, NULL, "OK");
 		return;
 	}
 	strncpy(tmp, r->request, 14);
 	if (strcmp(tmp, "CREATE ACCOUNT") == 0) {
-		tmp=r->request+15;
+		tmp = r->request + 15;
 		struct Account *a = malloc(sizeof(struct Account));
 		account_createFromString(a, tmp);
 		//server_addAccountRealloc(s, &a);

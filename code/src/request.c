@@ -37,14 +37,19 @@ int request_writeFIFO(char* fifoname, struct Request* r, char *msg) {
 }
 
 int request_waitFIFO(char* fifoname, struct Request* r, char *msg) {
-
+	FILE *file = fopen(fifoname, "r");
+	if (file == NULL)
+		perror("Ansfifo: ");
+	do {
+		fgets(msg, sizeof(msg), file);
+	}while (msg==NULL);
 	return 0;
 }
 
 int request_readFIFO(char* fifoname, struct Request* r, char *msg) {
 	int received = 0;
 	char line[MAX_LINE];
-	//printf("Server fifo: %s\n", serverFIFO);
+//printf("Server fifo: %s\n", serverFIFO);
 	FILE *file = fopen(fifoname, "r");
 	if (file == NULL)
 		perror("Serverfifo: ");

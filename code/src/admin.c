@@ -10,9 +10,14 @@
 #include "request.h"
 #include <string.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #define MAX_BUFFER_LEN 100
 #define MAX_USER_LEN 20
 #define MAX_PIN_LEN 4
+
+char* fifoname;
+
 void cls(void) {
 	// Credit goes to http://snipplr.com/view/15319/hacky-screen-clearing-through-printf/
 	printf("\033[2J\033[0;0f");
@@ -115,7 +120,7 @@ int admin_createAccount() {
 	} else {
 		printf("echo: %s\n", account_toString(&a));
 		struct Request r;
-		char* wrStr = malloc(sizeof(char)*128);
+		char* wrStr = malloc(sizeof(char) * 128);
 		sprintf(wrStr, "CREATE ACCOUNT %s\n", account_toString(&a));
 		request_create(&r, getpid(), "ADMIN", wrStr);
 		request_writeFIFO("/tmp/requests", &r, NULL);
@@ -149,8 +154,12 @@ int admin_deleteAccount() {
 int admin_shutdownServer() {
 	cls();
 	struct Request r;
+	char* msg = malloc(sizeof(char)*10);
 	request_create(&r, getpid(), "ADMIN", "SHUTDOWN");
 	request_writeFIFO("/tmp/requests", &r, NULL);
+	request_waitFIFO(fifoname, NULL, msg);
+	if(strcmp(msg, "OK")==0)
+		exit(0);
 	printf("Encerrar Servidor\n"
 			"----------------\n");
 	return 0;
@@ -158,6 +167,9 @@ int admin_shutdownServer() {
 
 void admin_run() {
 	int option = 0;
+	fifoname = malloc(sizeof(char) * 50);
+	sprintf(fifoname, "ans%d", getpid());
+	mkfifo(fifoname, 0777);
 	do {
 		cls();
 		admin_showMenu();
