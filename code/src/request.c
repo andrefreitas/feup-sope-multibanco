@@ -58,7 +58,8 @@ int request_readFIFO(char* fifoname, struct Request* r, char *msg) {
 			char* req;
 			who = strtok(tmp, ": >\n");
 			pid = strtok(NULL, ": >\n");
-			req = strtok(NULL, ": >\n");
+			strtok(NULL, " "); //discard space
+			req = strtok(NULL, ">\n");
 			request_create(r, atoi(pid), who, req);
 		} else {
 			strcpy(msg, line);

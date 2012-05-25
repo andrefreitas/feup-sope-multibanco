@@ -207,9 +207,9 @@ void server_run(struct Server *s) {
 	do {
 		char buffer[100];
 		struct Request *req = malloc(sizeof(struct Request));
-		req->pid=0;
+		req->pid = 0;
 		if (request_readFIFO(s->requestsFIFOname, req, buffer)) {
-			if (req->pid!=0)
+			if (req->pid != 0)
 				server_handleRequest(s, req);
 			total++;
 			printf("Total: %d\n", total);
@@ -220,6 +220,15 @@ void server_run(struct Server *s) {
 
 void server_handleRequest(struct Server *s, struct Request *r) {
 	printf("%d enviou: %s\n", r->pid, r->request);
+	char tmp[128];
+	if (strcmp(r->request, "SHUTDOWN") == 0) {
+		s->shutDown = 1;
+		return;
+	}
+	strncpy(tmp, r->request, 14);
+	if (strcmp(tmp, "CREATE ACCOUNT") == 0) {
+		printf("CREATE ACCOUNT!!!\n");
+	}
 
 }
 int main() {

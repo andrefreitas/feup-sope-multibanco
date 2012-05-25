@@ -18,24 +18,26 @@ void cls(void) {
 	printf("\033[2J\033[0;0f");
 	printf("\033[%d;%df", 0, 0);
 }
-int isInteger(char *buffer){
+int isInteger(char *buffer) {
 	int unsigned i;
-	char numbers[]="1234567890";
+	char numbers[] = "1234567890";
 	char *find;
-	for(i=0; i<strlen(buffer); i++){
-		find=strchr(numbers,buffer[i]);
-		if(find==NULL) return 0;
+	for (i = 0; i < strlen(buffer); i++) {
+		find = strchr(numbers, buffer[i]);
+		if (find == NULL)
+			return 0;
 	}
 	return 1;
 }
 
-int isFloat(char *buffer){
+int isFloat(char *buffer) {
 	int unsigned i;
-	char numbers[]="1234567890.";
+	char numbers[] = "1234567890.";
 	char *find;
-	for(i=0; i<strlen(buffer); i++){
-		find=strchr(numbers,buffer[i]);
-		if(find==NULL) return 0;
+	for (i = 0; i < strlen(buffer); i++) {
+		find = strchr(numbers, buffer[i]);
+		if (find == NULL)
+			return 0;
 	}
 	return 1;
 }
@@ -95,25 +97,30 @@ int admin_createAccount() {
 		printf("PIN(size=4): ");
 		gets(buffer);
 
-	} while(strlen(buffer)!=4);
-	strncpy(pin,buffer, 4);
-	pin[4]='\0';
+	} while (strlen(buffer) != 4);
+	strncpy(pin, buffer, 4);
+	pin[4] = '\0';
 
 	// Initial balance
-	do{
+	do {
 		printf("Balance: ");
 		gets(buffer);
-		balance=atof(buffer);
-	}while(balance<0 || !isFloat(buffer));
+		balance = atof(buffer);
+	} while (balance < 0 || !isFloat(buffer));
 
 	struct Account a;
-	if(!account_create(&a,number,user,pin,balance)){
+	if (!account_create(&a, number, user, pin, balance)) {
 		printf("Dados da conta invalidos!\n");
+		return 1;
+	} else {
+		printf("echo: %s\n", account_toString(&a));
+		struct Request r;
+		char* wrStr = malloc(sizeof(char)*128);
+		sprintf(wrStr, "CREATE ACCOUNT %d %s %s %f", number, user, pin, balance);
+		request_create(&r, getpid(), "ADMIN", wrStr);
+		request_writeFIFO("/tmp/requests", &r, NULL);
+		return 0;
 	}
-
-	printf("echo: %s\n",account_toString(&a));
-	gets(buffer);
-	return 0;
 }
 
 int admin_listAccounts() {
