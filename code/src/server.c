@@ -172,11 +172,23 @@ struct Account* server_getAccountbyID(struct Server *s, accountnr_t nr) {
 	return a;
 }
 
-void server_printAccounutts(struct Server *s) {
+void server_printAccounts(struct Server *s) {
 	int unsigned i = 0;
 	for (i = 0; i < s->totalAccounts; i++) {
 		printf("%s\n", account_toString(&s->accounts[i]));
 	}
+}
+
+char* server_getAccounts(struct Server *s) {
+	char* retStr = malloc(sizeof(char) * s->totalAccounts * 100);
+	int unsigned i = 0;
+	strcpy(retStr, account_toString(&s->accounts[i]));
+	for (i = 1; i < s->totalAccounts; i++) {
+		strcat(retStr, ">");
+		strcat(retStr, account_toString(&s->accounts[i]));
+	}
+
+	return retStr;
 }
 
 void server_sortAccounts(struct Server *s) {
@@ -214,13 +226,22 @@ void server_handleRequest(struct Server *s, struct Request *r) {
 	char *tmp = malloc(sizeof(char) * 200);
 	char* ansfifo = malloc(sizeof(char) * 50);
 	sprintf(ansfifo, "/tmp/ans%d", r->pid);
-	mkfifo(ansfifo, 0777);
+
 	if (strcmp(r->request, "SHUTDOWN") == 0) {
 		s->shutDown = 1;
 
 		request_writeFIFO(ansfifo, NULL, "OK");
 		return;
 	}
+
+	if (strcmp(r->request, "LIST") == 0) {
+		if (s->totalAccounts == 0)
+			request_writeFIFO(ansfifo, NULL, "FAIL");
+		else
+			request_writeFIFO(ansfifo, NULL, server_getAccounts(s));
+		return;
+	}
+
 	strcpy(tmp, r->request);
 	tmp[4] = '\0';
 	if (strcmp(tmp, "AUTH") == 0) {
@@ -309,6 +330,23 @@ void server_handleRequest(struct Server *s, struct Request *r) {
 				else
 					request_writeFIFO(ansfifo, NULL, "FAIL");
 			} else
+				request_writeFIFO(ansfifo, NULL, "FAIL");
+		} else
+			request_writeFIFO(ansfifo, NULL, "FAIL");
+		return;
+	}
+
+	strcpy(tmp, r->request);
+	tmp[14] = '\0';
+	if (strcmp(tmp, "DELETE ACCOUNT") == 0) {
+		tmp = r->request + 15;
+		char* tmp2 = malloc(sizeof(char) * 15);
+		tmp2 = strtok(tmp, " \n\0");
+		accountnr_t accnr = atoi(tmp2);
+		if (server_accountAlreadyExists(s, accnr)) {
+			if (server_deleteAccount(s, accnr))
+				request_writeFIFO(ansfifo, NULL, "OK");
+			else
 				request_writeFIFO(ansfifo, NULL, "FAIL");
 		} else
 			request_writeFIFO(ansfifo, NULL, "FAIL");

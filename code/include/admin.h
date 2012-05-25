@@ -19,7 +19,7 @@ void admin_handleOption(int option);
 
 int admin_createAccount();
 
-int admin_listAccounts();
+void admin_listAccounts();
 
 int admin_deleteAccount();
 

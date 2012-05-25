@@ -120,19 +120,47 @@ int admin_createAccount() {
 	} else {
 		printf("echo: %s\n", account_toString(&a));
 		struct Request r;
+		char msg[10];
 		char* wrStr = malloc(sizeof(char) * 128);
 		sprintf(wrStr, "CREATE ACCOUNT %s\n", account_toString(&a));
 		request_create(&r, getpid(), "ADMIN", wrStr);
 		request_writeFIFO("/tmp/requests", &r, NULL);
-		return 0;
+		request_waitFIFO("/tmp/requests", NULL, msg);
+
+		if (strcmp(msg, "OK") == 0)
+			return 1;
+		else
+			return 0;
 	}
 }
 
-int admin_listAccounts() {
+void admin_listAccounts() {
 	cls();
 	printf("Listar contas\n"
 			"----------------\n");
-	return 0;
+
+	struct Request r;
+	//TODO OPTIMIZE THIS MALLOC
+	char msg[500];
+	char* wrStr = malloc(sizeof(char) * 50);
+	sprintf(wrStr, "LIST");
+	request_create(&r, getpid(), "ADMIN", wrStr);
+	request_writeFIFO("/tmp/requests", &r, NULL);
+	request_waitFIFO(fifoname, NULL, msg);
+
+	if (strcmp(msg, "FAIL") == 0)
+		printf("Não existem contas!\n");
+	else {
+		int i;
+		for (i = 0; i < sizeof(msg); i++) {
+			if (msg[i] == '\0')
+				break;
+			if (msg[i] == '>')
+				msg[i] = '\n';
+		}
+		printf("%s", msg);
+	}
+	getchar();
 }
 
 int admin_deleteAccount() {
@@ -148,21 +176,38 @@ int admin_deleteAccount() {
 		number = atoi(buffer);
 	} while (strlen(buffer) > 7 || strlen(buffer) == 0 || number < 1
 			|| number > 9999999 || !isInteger(buffer));
-	return 0;
+
+	struct Request r;
+	char *msg = malloc(sizeof(char) * 10);
+	char* wrStr = malloc(sizeof(char) * 128);
+	sprintf(wrStr, "DELETE ACCOUNT %i\n", number);
+	request_create(&r, getpid(), "ADMIN", wrStr);
+	request_writeFIFO("/tmp/requests", &r, NULL);
+	request_waitFIFO(fifoname, NULL, msg);
+	printf("%s\n", msg);
+	getchar();
+
+	if (strcmp(msg, "OK") == 0)
+		return 1;
+	else
+		return 0;
+
 }
 
 int admin_shutdownServer() {
 	cls();
+	printf("Encerrar Servidor\n"
+			"----------------\n");
 	struct Request r;
 	char* msg = malloc(sizeof(char) * 10);
 	request_create(&r, getpid(), "ADMIN", "SHUTDOWN");
 	request_writeFIFO("/tmp/requests", &r, NULL);
 	request_waitFIFO(fifoname, NULL, msg);
+	printf("%s\n", msg);
 	if (strcmp(msg, "OK") == 0)
-		exit(0);
-	printf("Encerrar Servidor\n"
-			"----------------\n");
-	return 0;
+		return 1;
+	else
+		return 0;
 }
 
 void admin_run() {
@@ -190,7 +235,8 @@ void admin_handleOption(int option) {
 		admin_deleteAccount();
 		break;
 	case 4:
-		admin_shutdownServer();
+		if (admin_shutdownServer())
+			exit(0);
 		break;
 	}
 
